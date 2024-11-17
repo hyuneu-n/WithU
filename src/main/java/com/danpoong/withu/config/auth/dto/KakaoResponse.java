@@ -2,31 +2,49 @@ package com.danpoong.withu.config.auth.dto;
 
 import java.util.Map;
 
-public class KakaoResponse {
+public class KakaoResponse implements OAuth2Response {
 
-    private final Map<String, Object> attribute;
-    private final Map<String, Object> kakaoAccountAttribute;
-    private final Map<String, Object> profileAttribute;
+    private final Map<String, Object> attributes;            // 전체 응답 데이터
+    private final Map<String, Object> kakaoAccountAttributes; // 카카오 계정 데이터
+    private final Map<String, Object> profileAttributes;     // 프로필 데이터
 
-    public KakaoResponse(Map<String, Object> attribute) {
-        this.attribute = attribute;
-        this.kakaoAccountAttribute = (Map<String, Object>) attribute.get("kakao_account");
-        this.profileAttribute = (Map<String, Object>) kakaoAccountAttribute.get("profile");
+    // 생성자
+    public KakaoResponse(Map<String, Object> attributes) {
+        this.attributes = attributes;
+        this.kakaoAccountAttributes = (Map<String, Object>) attributes.get("kakao_account");
+        this.profileAttributes = kakaoAccountAttributes != null
+                ? (Map<String, Object>) kakaoAccountAttributes.get("profile")
+                : null;
     }
 
+    @Override
+    public String getProvider() {
+        return "kakao"; // 고정 값
+    }
+
+    @Override
     public String getProviderId() {
-        return attribute.get("id").toString();
+        return attributes.get("id").toString(); // 카카오 사용자 고유 ID
     }
 
+    @Override
     public String getEmail() {
-        return kakaoAccountAttribute.get("email").toString();
+        return kakaoAccountAttributes != null && kakaoAccountAttributes.containsKey("email")
+                ? kakaoAccountAttributes.get("email").toString()
+                : null; // 이메일이 없는 경우 null 반환
     }
 
+    @Override
     public String getNickname() {
-        return profileAttribute.get("nickname").toString();
+        return profileAttributes != null && profileAttributes.containsKey("nickname")
+                ? profileAttributes.get("nickname").toString()
+                : null; // 닉네임이 없는 경우 null 반환
     }
 
-    public String getProfileImage() {
-        return profileAttribute.get("profile_image_url").toString();
+    @Override
+    public String getProfileUrl() {
+        return profileAttributes != null && profileAttributes.containsKey("profile_image_url")
+                ? profileAttributes.get("profile_image_url").toString()
+                : null; // 프로필 이미지가 없는 경우 null 반환
     }
 }

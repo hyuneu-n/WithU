@@ -1,38 +1,37 @@
 package com.danpoong.withu.config.auth.dto;
 
-import com.danpoong.withu.user.domain.User;
-import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.util.Collection;
 import java.util.Map;
 
-@Getter
 public class CustomOAuth2User implements OAuth2User {
 
-  private final User user;
+  private final Collection<? extends GrantedAuthority> authorities;
+  private final Map<String, Object> attributes;
+  private final String nameAttributeKey;
 
-  public CustomOAuth2User(User user) {
-    this.user = user;
+  public CustomOAuth2User(Collection<? extends GrantedAuthority> authorities,
+                          Map<String, Object> attributes,
+                          String nameAttributeKey) {
+    this.authorities = authorities;
+    this.attributes = attributes;
+    this.nameAttributeKey = nameAttributeKey;
   }
 
   @Override
   public Map<String, Object> getAttributes() {
-    return Map.of(
-            "email", user.getEmail(),
-            "nickname", user.getNickname(),
-            "role", user.getRole()
-    );
+    return attributes;
   }
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
-    return null; // 필요한 경우 권한 정보를 반환
+    return authorities;
   }
 
   @Override
   public String getName() {
-    return user.getEmail();
+    return (String) attributes.get(nameAttributeKey);
   }
 }
