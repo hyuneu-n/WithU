@@ -46,58 +46,43 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class JwtFilter extends OncePerRequestFilter {
   private final JwtUtil jwtUtil;
-  // Repo 를 거쳐 User 를 꺼내오기
   private final UserRepository userRepository;
 
   @Override
   protected void doFilterInternal(
-      HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-      throws ServletException, IOException {
+          HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+          throws ServletException, IOException {
     try {
-      // Authorization 헤더에서 JWT 토큰을 가져옴
       final String authorizationHeader = request.getHeader("Authorization");
       String email = null;
       String jwt = null;
 
-      // Bearer 토큰인지 확인하고, JWT 토큰에서 Email 추출
       if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
         jwt = authorizationHeader.substring(7);
         email = jwtUtil.extractEmail(jwt);
       }
 
-      /*--------------------------------
-        사용자가 인증되지 않은 상태
-        1. 로그인 하지 않은 상태  SecurityContextHolder에 사용자의 인증 정보가 설정되지 않은 경우.
-        2. 잘못된 또는 만료된 토큰
-        3. 토큰이 없는 경우:
-      ---------------------------------*/
       if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-        // 사용자 정보 조회
         User user = userRepository.findByEmail(email).orElse(null);
-        // 사용자가 존재하고, JWT 토큰이 유효하다면
         if (user != null && jwtUtil.validateToken(jwt, user.getEmail())) {
-          UserDetails userDetails =
-              new org.springframework.security.core.userdetails.User(
+          UserDetails userDetails = new org.springframework.security.core.userdetails.User(
                   user.getEmail(),
                   "",
-                  Collections.singletonList(new SimpleGrantedAuthority(user.getUserRole())));
-          // UsernamePasswordAuthenticationToken 생성
+                  Collections.singletonList(new SimpleGrantedAuthority(user.getRole()))
+          );
           UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
-              new UsernamePasswordAuthenticationToken(
-                  userDetails, null, userDetails.getAuthorities());
+                  new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
           usernamePasswordAuthenticationToken.setDetails(
-              new WebAuthenticationDetailsSource().buildDetails(request));
+                  new WebAuthenticationDetailsSource().buildDetails(request));
           SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
         } else {
           log.warn("Invalid JWT Token for user: {}", email);
         }
       }
     } catch (JwtException e) {
-      // Jwt 파싱 또는 검증 오류
-      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token validate오류");
+      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token validation error");
       return;
     } catch (Exception e) {
-      // 로그 레벨 변경
       log.warn("JWT Authentication Filter Error");
       response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
       return;

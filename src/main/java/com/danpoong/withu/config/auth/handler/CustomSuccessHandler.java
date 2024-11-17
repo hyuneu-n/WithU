@@ -1,4 +1,4 @@
-package com.danpoong.withu.config.handler;
+package com.danpoong.withu.config.auth.handler;
 
 import com.danpoong.withu.config.auth.jwt.JwtUtil;
 import com.danpoong.withu.user.repository.UserRepository;
