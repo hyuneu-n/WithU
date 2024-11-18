@@ -14,41 +14,39 @@ java {
     }
 }
 
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
 repositories {
     mavenCentral()
 }
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
-
-    // swagger 설정 openapi-ui
+    //swagger 설정 openapi-ui
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-api:2.5.0'
-
-    // devtools > 서버 재시작 안해도 변경있으면 자동 재시작
+    //devtools > 서버 재시작 안해도 변경있으면 자동 재시작
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
-
-    // Lombok
+    //lombok
     annotationProcessor 'org.projectlombok:lombok'
     compileOnly 'org.projectlombok:lombok'
-
-    // DB
+    //db설정
     runtimeOnly 'com.mysql:mysql-connector-j'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-    // OAuth2
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-
-    // Spring-security
+    //spring security
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    testImplementation 'org.springframework.security:spring-security-test'
-
-    // Jwt
+    //jwt
     implementation group:'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.5'
     implementation group:'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.5'
     implementation group:'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.5'
+
     //validation
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 }
