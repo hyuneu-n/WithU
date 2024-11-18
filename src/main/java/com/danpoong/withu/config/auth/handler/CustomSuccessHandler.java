@@ -1,22 +1,20 @@
 package com.danpoong.withu.config.auth.handler;
 
-import java.io.IOException;
-
+import com.danpoong.withu.config.auth.jwt.JwtUtil;
+import com.danpoong.withu.user.domain.User;
+import com.danpoong.withu.user.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
-import com.danpoong.withu.config.auth.jwt.JwtUtil;
-import com.danpoong.withu.user.domain.User;
-import com.danpoong.withu.user.repository.UserRepository;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
@@ -25,10 +23,15 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
 
+    @Value("${front-url}")
+    private String frontUrl;
+
+    @Value("${redirect-url-suffix}")
+    private String redirectUrlSuffix;
+
     private static final String AUTHORIZATION_COOKIE = "Authorization";
     private static final String REFRESH_TOKEN_COOKIE = "Refresh-Token";
     private static final String DEFAULT_ROLE = "ROLE_USER";
-    private static final String REDIRECT_URL = "http://localhost:8080/api/users/home";
     private static final int ACCESS_TOKEN_MAX_AGE = 60 * 60; // 1시간
     private static final int REFRESH_TOKEN_MAX_AGE = 7 * 24 * 60 * 60; // 7일
 
@@ -37,18 +40,18 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             HttpServletRequest request, HttpServletResponse response, Authentication authentication)
             throws IOException {
 
-        // 사용자 정보 추출
+        // 이메일
         String email = authentication.getName();
         log.info("Authenticated email: {}", email);
 
-        // 역할 가져오기
+        // 역할
         String role = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .findFirst()
                 .orElse(DEFAULT_ROLE);
         log.info("User role: {}", role);
 
-        // 토큰 생성
+        // 액세스&리프레시 토큰 생성
         String accessToken = jwtUtil.createAccessToken(email, role);
         String refreshToken = jwtUtil.createRefreshToken(email);
 
@@ -58,21 +61,29 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         user.setRefreshToken(refreshToken);
         userRepository.save(user);
 
-        // 쿠키 설정 및 추가
+        // 토큰 쿠키에 추가
         response.addCookie(createCookie(AUTHORIZATION_COOKIE, accessToken, ACCESS_TOKEN_MAX_AGE));
         response.addCookie(createCookie(REFRESH_TOKEN_COOKIE, refreshToken, REFRESH_TOKEN_MAX_AGE));
         log.info("Access and Refresh tokens added to cookies for email: {}", email);
 
         // 리다이렉트 설정
-        response.sendRedirect(REDIRECT_URL);
+        String redirectUrl = frontUrl + redirectUrlSuffix;
+        response.sendRedirect(redirectUrl);
     }
 
+    /**
+     * JWT를 쿠키로 생성하는 메서드
+     *
+     * @param name   쿠키 이름
+     * @param value  쿠키 값
+     * @param maxAge 쿠키 유효 시간 (초)
+     * @return 생성된 쿠키 객체
+     */
     private Cookie createCookie(String name, String value, int maxAge) {
         Cookie cookie = new Cookie(name, value);
         cookie.setMaxAge(maxAge);
-        cookie.setHttpOnly(true); // 클라이언트에서 스크립트로 접근 못하게 설정
-        cookie.setPath("/"); // 모든 경로에서 쿠키 사용 가능
-        // cookie.setSecure(true); // HTTPS 환경에서만 사용할 경우 활성화
+        cookie.setHttpOnly(true); // 클라이언트 스크립트 접근 불가
+        cookie.setPath("/"); // 모든 경로에서 사용 가능
         return cookie;
     }
 }
