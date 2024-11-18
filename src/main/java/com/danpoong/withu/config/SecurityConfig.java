@@ -38,20 +38,20 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers(
-                                "/",
+                                "/", // 기본 루트 경로
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/api/users/**",
                                 "/oauth2/**",
                                 "/login/**")
                         .permitAll()
-                        .requestMatchers("/api/v1/user/*").hasRole("USER")
-                        .requestMatchers("/api/v1/admin/*").hasRole("ADMIN")
-                        .anyRequest().authenticated())
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // JWT 필터 추가
+                        .requestMatchers("/api/v1/user/**").hasAuthority("ROLE_USER")
+                        .requestMatchers("/api/v1/admin/**").hasAuthority("ROLE_ADMIN")
+                        .anyRequest().authenticated()) // 나머지 요청은 인증 필요
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-                        .successHandler(customSuccessHandler)); // OAuth2 로그인 성공 핸들러 추가
+                        .successHandler(customSuccessHandler));
 
         return http.build();
     }
