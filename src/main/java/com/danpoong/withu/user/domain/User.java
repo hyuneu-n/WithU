@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -26,7 +28,7 @@ public class User {
     private String profileImage;
 
     @Column
-    private String birthday; // 추후 마이페이지에서 설정 예정 -> 카카오 권한 없음!
+    private LocalDate birthday; // 추후 마이페이지에서 설정 예정 -> 카카오 권한 없음!
 
     @ManyToOne
     @JoinColumn(name = "familyId", nullable = true)

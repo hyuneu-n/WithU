@@ -31,13 +31,11 @@ public class UserController {
     public ResponseEntity<?> refreshAuthTokenByRequestParam(@RequestParam String refreshToken, @RequestParam String email) {
         log.debug("Refreshing token for email: {}", email);
 
-        // Refresh Token 유효성 검증
         if (!jwtUtil.validateToken(refreshToken, email)) {
             log.warn("Invalid Refresh Token for email: {}", email);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Refresh Token");
         }
 
-        // Access Token 생성
         String newAccessToken = jwtUtil.createAccessToken(email, userService.getUserRole(email), userService.getFamilyId(email));
         log.debug("New Access Token created for email: {}", email);
 
@@ -49,13 +47,11 @@ public class UserController {
     public ResponseEntity<?> refreshAuthTokenByRequestBody(@RequestBody RefreshTokenRequest request) {
         log.debug("Refreshing token for email: {}", request.getEmail());
 
-        // Refresh Token 유효성 검증
         if (!jwtUtil.validateToken(request.getRefreshToken(), request.getEmail())) {
             log.warn("Invalid Refresh Token for email: {}", request.getEmail());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Refresh Token");
         }
 
-        // Access Token 생성
         String newAccessToken = jwtUtil.createAccessToken(request.getEmail(), userService.getUserRole(request.getEmail()), userService.getFamilyId(request.getEmail()));
         log.debug("New Access Token created for email: {}", request.getEmail());
 

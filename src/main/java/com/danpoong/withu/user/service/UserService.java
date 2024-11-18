@@ -56,7 +56,8 @@ public class UserService {
                 user.getNickname(),
                 user.getProfileImage(),
                 user.getBirthday(),
-                user.getRole()
+                user.getRole(),
+                user.getFamily() != null ? user.getFamily().getFamilyId() : null
         );
     }
 
