@@ -17,42 +17,6 @@ import io.swagger.v3.oas.models.servers.Server;
 
 @Configuration
 public class SwaggerConfig {
-//    @Value("${server.servlet.context-path:}")
-//    private String contextPath;
-//
-//    @Bean
-//    public OpenAPI customOpenAPI() {
-//        Server localServer = new Server();
-//        localServer.setUrl(contextPath);
-//        localServer.setDescription("Local Server");
-//
-//        Server prodServer = new Server();
-//        prodServer.setDescription("Production Server");
-//
-//        return new OpenAPI()
-//                .addServersItem(localServer)
-//                .addServersItem(prodServer)
-//                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
-//                .components(
-//                        new Components()
-//                                .addSecuritySchemes(
-//                                        "bearerAuth",
-//                                        new SecurityScheme()
-//                                                .type(SecurityScheme.Type.HTTP)
-//                                                .scheme("bearer")
-//                                                .bearerFormat("JWT")))
-//                .info(
-//                        new Info()
-//                                .title("\uD83C\uDF41WithU API")
-//                                .version("1.0")
-//                                .description("API Test용 ID : "));
-//    }
-//
-//    @Bean
-//    public GroupedOpenApi customGroupedOpenApi() {
-//        return GroupedOpenApi.builder().group("api").pathsToMatch("/**").build();
-//    }
-
     @Value("${api.server.url}")
     private String serverUrl;
 
