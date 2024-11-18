@@ -29,6 +29,13 @@ jobs:
           mysql user: 'test'
           mysql password: 'testPW'
 
+      - name: Create application.properties
+        env:
+          APP_PROPS: ${{ secrets.APPLICATION_PROPERTIES_CI }}
+        run: |
+          mkdir -p src/main/resources
+          echo "$APP_PROPS" > src/main/resources/application.properties
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v 3.1.0
 
