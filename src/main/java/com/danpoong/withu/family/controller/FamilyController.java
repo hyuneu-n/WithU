@@ -6,6 +6,7 @@ import com.danpoong.withu.family.service.FamilyService;
 import com.danpoong.withu.user.domain.User;
 import com.danpoong.withu.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/family")
 @RequiredArgsConstructor
+@Tag(name = "Family")
 public class FamilyController {
 
     private final FamilyService familyService;
