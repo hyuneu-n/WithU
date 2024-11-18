@@ -44,7 +44,8 @@ public class SecurityConfig {
                                 "/api/users/home",
                                 "/oauth2/**",
                                 "/login/**",
-                                "/api/family/**"
+                                "/api/family/**",
+                                "/api/random-message/**"
                         ).permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
