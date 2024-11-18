@@ -6,8 +6,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-@OpenAPIDefinition(servers = {@Server(url = "/",
-        description = "Default Server URL")})
 
 @Configuration
 public class WithUConfiguration implements WebMvcConfigurer {
