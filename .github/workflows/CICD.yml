@@ -31,28 +31,12 @@ jobs:
           mysql user: 'test'
           mysql password: 'testPW'
 
-#      - name: Create application.properties
-#        env:
-#          APP_PROPS: ${{ secrets.APPLICATION_PROPERTIES }}
-#        run: |
-#          mkdir -p src/main/resources
-#          echo "$APP_PROPS" > src/main/resources/application.properties
       - name: Create application.properties
+        env:
+          APP_PROPS: ${{ secrets.APPLICATION_PROPERTIES }}
         run: |
-          cat <<EOT > ./src/main/resources/application.properties
-          commit.hash=${{ steps.slug.outputs.sha7 }}
-          api.server.url=${{ secrets.API_URL }}
-          spring.datasource.url=${{ secrets.DB_URL }}
-          spring.datasource.username=${{ secrets.DB_USERNAME }}
-          spring.datasource.password=${{ secrets.DB_PASSWORD }}
-          spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
-          spring.jpa.properties.hibernate.show_sql=true
-          spring.jpa.properties.hibernate.format_sql=true
-          spring.jpa.hibernate.ddl-auto=create
-          server.port=8080
-          EOT
-        shell: bash
-
+          mkdir -p src/main/resources
+          echo "$APP_PROPS" > src/main/resources/application.properties
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
