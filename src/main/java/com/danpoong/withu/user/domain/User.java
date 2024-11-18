@@ -1,5 +1,6 @@
 package com.danpoong.withu.user.domain;
 
+import com.danpoong.withu.family.domain.Family;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,6 +27,10 @@ public class User {
 
     @Column
     private String birthday; // 추후 마이페이지에서 설정 예정 -> 카카오 권한 없음!
+
+    @ManyToOne
+    @JoinColumn(name = "familyId", nullable = true)
+    private Family family;
 
     @Column(nullable = false)
     private String role;

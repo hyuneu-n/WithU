@@ -17,19 +17,21 @@ public class UserService {
 
     // 첫 로그인 확인
     public Boolean isFirstLogin(String email) {
-        userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
-        return userRepository.findByEmail(email).get().getRefreshToken() == null;
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+        return user.getRefreshToken() == null; // Refresh Token이 없는 경우 첫 로그인
     }
 
     // 사용자 정보 등록
     public String registerUserInfo(String email, UserRegisterRequest request) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
 
         if (user.getRefreshToken() != null) {
             return "사용자의 정보가 이미 등록되었습니다.";
         }
 
+        // 사용자 정보 업데이트
         user.setNickname(request.getNickname());
         user.setBirthday(request.getBirthday());
         user.setProfileImage(request.getProfileImage());
@@ -40,15 +42,15 @@ public class UserService {
 
     // 사용자 권한 조회
     public String getUserRole(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"))
-                .getRole();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+        return user.getRole();
     }
 
     // 사용자 정보 조회
     public UserResponse getUserInfo(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
         return new UserResponse(
                 user.getEmail(),
                 user.getNickname(),
@@ -56,5 +58,27 @@ public class UserService {
                 user.getBirthday(),
                 user.getRole()
         );
+    }
+
+    // 가족 ID 조회
+    public Long getFamilyId(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+        if (user.getFamily() == null) {
+            return null; // 가족 그룹이 없는 경우 null 반환
+        }
+        return user.getFamily().getFamilyId(); // 가족 ID 반환
+    }
+
+    // 사용자 ID로 조회
+    public User findById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+    }
+
+    // 이메일로 사용자 조회
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
     }
 }

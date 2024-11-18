@@ -23,21 +23,23 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String createAccessToken(String email, String role) {
-        Date expiration = Date.from(Instant.now().plus(1, ChronoUnit.DAYS));
+    public String createAccessToken(String email, String role, Long familyId) {
+        Date expiration = Date.from(Instant.now().plus(1, ChronoUnit.HOURS)); // 1시간 유효
         return Jwts.builder()
                 .setId(email)
                 .setSubject(role)
+                .claim("familyId", familyId) // 가족 ID 포함
                 .setIssuedAt(new Date())
                 .setExpiration(expiration)
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public String createRefreshToken(String email) {
-        Date expiration = Date.from(Instant.now().plus(7, ChronoUnit.DAYS));
+    public String createRefreshToken(String email, Long familyId) {
+        Date expiration = Date.from(Instant.now().plus(7, ChronoUnit.DAYS)); // 7일 유효
         return Jwts.builder()
                 .setId(email)
+                .claim("familyId", familyId) // 가족 ID 포함
                 .setIssuedAt(new Date())
                 .setExpiration(expiration)
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
@@ -77,5 +79,14 @@ public class JwtUtil {
                 .parseClaimsJws(token)
                 .getBody()
                 .getId();
+    }
+
+    public Long extractFamilyId(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("familyId", Long.class); // 가족 ID 추출
     }
 }
