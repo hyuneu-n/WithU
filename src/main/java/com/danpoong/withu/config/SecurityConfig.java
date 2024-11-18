@@ -45,6 +45,7 @@ public class SecurityConfig {
                                 "/oauth2/**",
                                 "/login/**",
                                 "/api/family/**",
+                                "/api/random-message/**",
                                 "/api/mypage/**"
                         ).permitAll()
                         .anyRequest().authenticated())
