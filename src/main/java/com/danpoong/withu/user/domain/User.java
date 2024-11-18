@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
 
@@ -39,4 +40,8 @@ public class User {
 
     @Column
     private String refreshToken;
+
+    @Column(nullable = false, updatable = false)
+    @CreationTimestamp
+    private LocalDate createdAt;
 }
