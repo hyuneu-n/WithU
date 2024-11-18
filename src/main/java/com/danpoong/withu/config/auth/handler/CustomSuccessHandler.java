@@ -23,19 +23,17 @@ import java.util.Map;
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtUtil jwtUtil;
-    private final UserRepository userRepository;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
-        // OAuth2User에서 이메일과 닉네임 추출
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         Map<String, Object> attributes = oAuth2User.getAttributes();
 
         String email = (String) attributes.get("email");
         String nickname = (String) attributes.get("nickname");
 
-        log.info("Authentication successful. Extracted email: {}", email);
-        log.info("Authentication successful. Extracted nickname: {}", nickname);
+        log.info("추출된 Email: {}", email);
+        log.info("추출된 Nickname: {}", nickname);
 
         // 이메일 기반으로 JWT 생성
         if (email != null) {
@@ -55,12 +53,14 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             // 응답 본문에 리다이렉트 URL과 JWT 반환
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
+            // **도메인 구매 시 수정 필요
             response.getWriter().write("{ \"redirectUrl\": \"http://localhost:8080/api/users/home\", \"accessToken\": \"" + accessToken + "\" }");
 
             // 리다이렉트 설정
+            // **도메인 구매 시 수정 필요
             getRedirectStrategy().sendRedirect(request, response, "http://localhost:8080/api/users/home");
         } else {
-            log.error("Email is null. Cannot generate JWT.");
+            log.error("Email is null. JWT 생성 불가");
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid authentication data");
         }
     }
