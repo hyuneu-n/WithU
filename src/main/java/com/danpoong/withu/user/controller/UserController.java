@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
-@Tag(name = "User API", description = "사용자 관련 API")
+@Tag(name = "User")
 public class UserController {
 
     private final JwtUtil jwtUtil;
@@ -63,7 +63,7 @@ public class UserController {
     }
 
     @Operation(summary = "로그아웃", description = "사용자의 인증 쿠키를 삭제")
-    @PostMapping("/log-out")
+    @PostMapping("/logout")
     public ResponseEntity<?> userLogOut(HttpServletResponse response) {
         log.debug("Logging out user");
         Cookie cookie = new Cookie("Authorization", null);
@@ -73,7 +73,7 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "사용자 권한 조회", description = "사용자의 권한 정보를 반환")
+    @Operation(summary = "[TEST] 사용자 권한 조회", description = "사용자의 권한 정보를 반환")
     @GetMapping("/get-user-role")
     public ResponseEntity<String> getUserRole(@RequestHeader("Authorization") String token) {
         log.debug("Fetching user role");
@@ -81,7 +81,7 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserRole(email));
     }
 
-    @Operation(summary = "첫 로그인 여부 확인", description = "사용자가 첫 로그인을 했는지 확인")
+    @Operation(summary = "[TEST] 첫 로그인 여부 확인", description = "사용자가 첫 로그인을 했는지 확인")
     @PostMapping("/check-first-login")
     public ResponseEntity<Boolean> checkFirstLogin(@RequestHeader("Authorization") String token) {
         try {
@@ -94,7 +94,7 @@ public class UserController {
         }
     }
 
-    @Operation(summary = "사용자 정보 등록", description = "사용자 첫 로그인 후 정보를 등록")
+    @Operation(summary = "사용자 정보 등록", description = "사용자 첫 로그인 후 정보 등록")
     @PostMapping("/register")
     public ResponseEntity<String> registerUserInfo(
             @RequestHeader("Authorization") String token,
@@ -110,8 +110,8 @@ public class UserController {
         }
     }
 
-    @Operation(summary = "사용자 정보 조회", description = "사용자의 상세 정보를 반환")
-    @GetMapping("/my-info")
+    @Operation(summary = "사용자 정보 조회", description = "사용자의 상세정보 조회")
+    @GetMapping("/myInfo")
     public ResponseEntity<UserResponse> getUserInfo(@RequestHeader("Authorization") String token) {
         try {
             log.debug("Fetching user info");
@@ -123,7 +123,7 @@ public class UserController {
         }
     }
 
-    @Operation(summary = "홈 화면", description = "로그인 후 홈 화면 메시지 확인")
+    @Operation(summary = "[TEST] 홈 화면", description = "로그인 후 리다이렉트 테스트")
     @GetMapping("/home")
     public ResponseEntity<String> home() {
         return ResponseEntity.ok("로그인 성공!");
