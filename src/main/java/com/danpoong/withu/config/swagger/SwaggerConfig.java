@@ -17,7 +17,7 @@ import io.swagger.v3.oas.models.servers.Server;
 
 @Configuration
 public class SwaggerConfig {
-    @Value("http://13.209.177.17:8080")
+    @Value("${api.server.url}")
     private String serverUrl;
 
     @Bean
