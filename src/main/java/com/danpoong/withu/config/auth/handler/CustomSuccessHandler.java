@@ -1,72 +1,78 @@
 package com.danpoong.withu.config.auth.handler;
 
-import com.danpoong.withu.config.auth.jwt.JwtUtil;
+import java.io.IOException;
+
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.util.Map;
+import com.danpoong.withu.config.auth.jwt.JwtUtil;
+import com.danpoong.withu.user.domain.User;
+import com.danpoong.withu.user.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
-
     private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
 
-    @Value("${front-url}")
-    private String frontUrl;
+    private static final String AUTHORIZATION_COOKIE = "Authorization";
+    private static final String REFRESH_TOKEN_COOKIE = "Refresh-Token";
+    private static final String DEFAULT_ROLE = "ROLE_USER";
+    private static final String REDIRECT_URL = "http://localhost:8080/api/users/home";
+    private static final int ACCESS_TOKEN_MAX_AGE = 60 * 60; // 1시간
+    private static final int REFRESH_TOKEN_MAX_AGE = 7 * 24 * 60 * 60; // 7일
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
-        OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-        Map<String, Object> attributes = oAuth2User.getAttributes();
+    public void onAuthenticationSuccess(
+            HttpServletRequest request, HttpServletResponse response, Authentication authentication)
+            throws IOException {
 
-        String email = (String) attributes.get("email");
-        String nickname = (String) attributes.getOrDefault("nickname", "defaultNickname");
+        // 사용자 정보 추출
+        String email = authentication.getName();
+        log.info("Authenticated email: {}", email);
 
-        log.info("Extracted Email: {}", email);
-        log.info("Extracted Nickname: {}", nickname);
+        // 역할 가져오기
+        String role = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .findFirst()
+                .orElse(DEFAULT_ROLE);
+        log.info("User role: {}", role);
 
-        if (email == null || email.isEmpty()) {
-            log.error("Email is null or empty. Cannot generate JWT.");
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid authentication data");
-            return;
-        }
-
-        // 액세스 및 리프레시 토큰 생성
-        String accessToken = jwtUtil.createAccessToken(email, "ROLE_USER");
+        // 토큰 생성
+        String accessToken = jwtUtil.createAccessToken(email, role);
         String refreshToken = jwtUtil.createRefreshToken(email);
-        log.info("Generated Access Token: {}", accessToken);
-        log.info("Generated Refresh Token: {}", refreshToken);
 
-        // 쿠키에 저장
-        response.addCookie(createJwtCookie("Authorization", accessToken, 3600)); // 1시간
-        response.addCookie(createJwtCookie("Refresh-Token", refreshToken, 7 * 24 * 3600)); // 7일
-        log.info("Added Tokens to Cookies for email: {}", email);
+        // Refresh 토큰 저장
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setRefreshToken(refreshToken);
+        userRepository.save(user);
 
-        // 응답 본문 반환
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        response.getWriter().write("{ \"redirectUrl\": \"" + frontUrl + "/home\", \"accessToken\": \"" + accessToken + "\", \"refreshToken\": \"" + refreshToken + "\" }");
+        // 쿠키 설정 및 추가
+        response.addCookie(createCookie(AUTHORIZATION_COOKIE, accessToken, ACCESS_TOKEN_MAX_AGE));
+        response.addCookie(createCookie(REFRESH_TOKEN_COOKIE, refreshToken, REFRESH_TOKEN_MAX_AGE));
+        log.info("Access and Refresh tokens added to cookies for email: {}", email);
 
         // 리다이렉트 설정
-        getRedirectStrategy().sendRedirect(request, response, frontUrl + "/home");
+        response.sendRedirect(REDIRECT_URL);
     }
 
-    private Cookie createJwtCookie(String name, String token, int maxAge) {
-        Cookie cookie = new Cookie(name, token);
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
+    private Cookie createCookie(String name, String value, int maxAge) {
+        Cookie cookie = new Cookie(name, value);
         cookie.setMaxAge(maxAge);
+        cookie.setHttpOnly(true); // 클라이언트에서 스크립트로 접근 못하게 설정
+        cookie.setPath("/"); // 모든 경로에서 쿠키 사용 가능
+        // cookie.setSecure(true); // HTTPS 환경에서만 사용할 경우 활성화
         return cookie;
     }
 }
