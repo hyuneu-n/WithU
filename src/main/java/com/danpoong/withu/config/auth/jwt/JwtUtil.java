@@ -1,15 +1,16 @@
 package com.danpoong.withu.config.auth.jwt;
 
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
-
-import io.jsonwebtoken.security.Keys;
 
 @Slf4j
 @Component
@@ -23,11 +24,22 @@ public class JwtUtil {
     }
 
     public String createAccessToken(String email, String role) {
+        Date expiration = Date.from(Instant.now().plus(1, ChronoUnit.DAYS));
         return Jwts.builder()
                 .setId(email)
                 .setSubject(role)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1시간
+                .setExpiration(expiration)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String createRefreshToken(String email) {
+        Date expiration = Date.from(Instant.now().plus(7, ChronoUnit.DAYS));
+        return Jwts.builder()
+                .setId(email)
+                .setIssuedAt(new Date())
+                .setExpiration(expiration)
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -40,9 +52,20 @@ public class JwtUtil {
                     .parseClaimsJws(token)
                     .getBody();
 
-            return claims.getId().equals(email);
-        } catch (Exception e) {
-            log.error("Token validation error: {}", e.getMessage());
+            String extractedEmail = claims.getId();
+            if (!extractedEmail.equals(email)) {
+                log.warn("JWT Token validation failed: Email mismatch");
+                return false;
+            }
+
+            if (claims.getExpiration().before(new Date())) {
+                log.warn("JWT Token validation failed: Token expired");
+                return false;
+            }
+
+            return true;
+        } catch (JwtException e) {
+            log.warn("JWT validation failed: {}", e.getMessage());
             return false;
         }
     }
