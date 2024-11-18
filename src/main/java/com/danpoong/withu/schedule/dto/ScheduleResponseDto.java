@@ -15,6 +15,7 @@ public class ScheduleResponseDto {
     private String memo;
     private String author;
     private int dday;
+    private Long familyId;
 
     public ScheduleResponseDto(Schedule schedule) {
         this.scheduleId = schedule.getScheduleId();
@@ -23,5 +24,6 @@ public class ScheduleResponseDto {
         this.memo = schedule.getMemo();
         this.author = schedule.getAuthor();
         this.dday = schedule.calculateDDay();
+        this.familyId = schedule.getFamily() != null ? schedule.getFamily().getFamilyId() : null;
     }
 }
