@@ -39,6 +39,7 @@ public class SecurityConfig {
                                 "/",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
+                                "/health-check",
                                 "/api/users/**",
                                 "/api/users/home",
                                 "/oauth2/**",
@@ -59,7 +60,7 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:3000",
                 "http://localhost:8080",
-                "http://ec2-13-209-177-17.ap-northeast-2.compute.amazonaws.com"
+                "http://15.164.29.113:8080"
         ));
         configuration.setAllowedMethods(Collections.singletonList("*"));
         configuration.setAllowedHeaders(Collections.singletonList("*"));
