@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -81,5 +83,41 @@ public class UserService {
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+    }
+
+    // 닉네임 업데이트
+    public void updateNickname(Long userId, String newNickname) {
+        User user = findById(userId);
+        user.setNickname(newNickname);
+        userRepository.save(user);
+    }
+
+    // 생년월일 업데이트
+    public void updateBirthdate(Long userId, LocalDate birthdate) {
+        User user = findById(userId);
+        user.setBirthday(birthdate);
+        userRepository.save(user);
+    }
+
+//    // 받은 편지 수 조회
+//    public int getReceivedLettersCount(Long userId) {
+//        return letterRepository.countByRecipientId(userId);
+//    }
+
+//    // 보낸 편지 수 조회
+//    public int getSentLettersCount(Long userId) {
+//        return letterRepository.countBySenderId(userId);
+//    }
+
+    // 로그아웃
+    public void logout(Long userId) {
+        User user = findById(userId);
+        user.setRefreshToken(null);
+        userRepository.save(user);
+    }
+
+    // 계정 탈퇴
+    public void deleteAccount(Long userId) {
+        userRepository.deleteById(userId);
     }
 }
