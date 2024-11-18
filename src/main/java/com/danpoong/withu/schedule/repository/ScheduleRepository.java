@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
-    Optional<Schedule> findByScheduleIdAndFamily(Long scheduleId, Family family);
-    Optional<Schedule> findByScheduleIdAndUser(Long scheduleId, User user);
+    List<Schedule> findByUser_Id(Long userId);
+    List<Schedule> findByFamily_FamilyId(Long familyId);
     List<Schedule> findAllByDeletedFalse();
 }

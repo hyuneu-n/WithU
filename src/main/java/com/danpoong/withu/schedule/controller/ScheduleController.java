@@ -32,7 +32,7 @@ public class ScheduleController {
     private final JwtUtil jwtUtil;
     private final UserService userService;
 
-    @Operation(summary = "일정 추가", description = "일정 추가")
+
     @PostMapping("/add")
     public ResponseEntity<ScheduleResponseDto> addSchedule(
             @RequestHeader("Authorization") String bearerToken,
@@ -40,7 +40,16 @@ public class ScheduleController {
             @RequestParam(required = false) String memo,
             @RequestParam LocalDate date) {
 
-        String email = extractEmailFromToken(bearerToken);
+        if (title == null || title.isEmpty()) {
+            throw new IllegalArgumentException("제목은 필수 입력 항목입니다.");
+        }
+
+        if (date == null) {
+            throw new IllegalArgumentException("날짜는 필수 입력 항목입니다.");
+        }
+
+        String token = extractToken(bearerToken); // 토큰 유효성 검사 및 추출
+        String email = jwtUtil.extractEmail(token); // JWT에서 이메일 추출
         User user = userService.findByEmail(email);
 
         String authorName = user.getNickname();
@@ -50,6 +59,7 @@ public class ScheduleController {
         ScheduleResponseDto scheduleResponse = scheduleService.addSchedule(userId, familyId, title, memo, date, authorName);
         return ResponseEntity.ok(scheduleResponse);
     }
+
 
     @Operation(summary = "일정 수정", description = "일정 수정")
     @PutMapping("/update/{scheduleId}")
@@ -82,16 +92,14 @@ public class ScheduleController {
 
     @Operation(summary = "일정 삭제", description = "일정 ID로 특정 일정 삭제")
     @DeleteMapping("/{scheduleId}")
-    public ResponseEntity<String> deleteSchedule(@PathVariable Long scheduleId) {
-        scheduleService.deleteSchedule(scheduleId);
-        return ResponseEntity.ok("일정이 성공적으로 삭제되었습니다.");
-    }
+    public ResponseEntity<String> deleteSchedule(
+            @RequestHeader("Authorization") String bearerToken,
+            @PathVariable Long scheduleId) {
+        String email = jwtUtil.extractEmail(bearerToken.substring(7));
+        User user = userService.findByEmail(email);
 
-    @Operation(summary = "전체 일정 조회", description = "전체일정 조회")
-    @GetMapping("/all")
-    public ResponseEntity<List<ScheduleResponseDto>> getAllSchedules() {
-        List<ScheduleResponseDto> schedules = scheduleService.findAllSchedules();
-        return ResponseEntity.ok(schedules);
+        scheduleService.deleteSchedule(scheduleId, user.getId());
+        return ResponseEntity.ok("일정이 성공적으로 삭제되었습니다.");
     }
 
     private String extractEmailFromToken(String bearerToken) {
@@ -117,5 +125,25 @@ public class ScheduleController {
         // 이메일로 사용자 조회 및 ID 반환
         User user = userService.findByEmail(email);
         return user.getId();
+    }
+
+    @Operation(summary = "전체 일정 조회", description = "사용자 또는 가족 ID에 해당하는 전체 일정 조회")
+    @GetMapping("/all")
+    public ResponseEntity<List<ScheduleResponseDto>> getAllSchedules(@RequestHeader("Authorization") String bearerToken) {
+        String email = jwtUtil.extractEmail(bearerToken.substring(7));
+        User user = userService.findByEmail(email);
+
+        Long userId = user.getId();
+        Long familyId = user.getFamily() != null ? user.getFamily().getFamilyId() : null;
+
+        List<ScheduleResponseDto> schedules = scheduleService.findSchedulesByUserOrFamily(userId, familyId);
+        return ResponseEntity.ok(schedules);
+    }
+
+    private String extractToken(String bearerToken) {
+        if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
+            throw new IllegalArgumentException("Authorization 헤더에 올바른 토큰이 없습니다.");
+        }
+        return bearerToken.substring(7).trim();
     }
 }
