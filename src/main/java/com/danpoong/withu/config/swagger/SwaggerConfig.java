@@ -24,7 +24,16 @@ public class SwaggerConfig {
     public OpenAPI openAPI() {
         return new OpenAPI()
                 .info(info)
-                .addServersItem(new Server().url(serverUrl));
+                .addServersItem(new Server().url(serverUrl))
+                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
+                .components(
+                        new Components()
+                                .addSecuritySchemes(
+                                        "bearerAuth",
+                                        new SecurityScheme()
+                                                .type(SecurityScheme.Type.HTTP)
+                                                .scheme("bearer")
+                                                .bearerFormat("JWT")));
     }
 
     Info info = new Info().title("\uD83C\uDF41WithU API").version("0.0.1").description(
