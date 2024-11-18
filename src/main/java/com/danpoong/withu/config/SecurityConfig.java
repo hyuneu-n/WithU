@@ -43,7 +43,8 @@ public class SecurityConfig {
                                 "/api/users/**",
                                 "/api/users/home",
                                 "/oauth2/**",
-                                "/login/**"
+                                "/login/**",
+                                "/api/family/**"
                         ).permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
