@@ -38,7 +38,7 @@ public class UserController {
         }
 
         // Access Token 생성
-        String newAccessToken = jwtUtil.createAccessToken(email, userService.getUserRole(email));
+        String newAccessToken = jwtUtil.createAccessToken(email, userService.getUserRole(email), userService.getFamilyId(email));
         log.debug("New Access Token created for email: {}", email);
 
         return ResponseEntity.ok(new AuthResponse(newAccessToken));
@@ -56,7 +56,7 @@ public class UserController {
         }
 
         // Access Token 생성
-        String newAccessToken = jwtUtil.createAccessToken(request.getEmail(), request.getNickname());
+        String newAccessToken = jwtUtil.createAccessToken(request.getEmail(), userService.getUserRole(request.getEmail()), userService.getFamilyId(request.getEmail()));
         log.debug("New Access Token created for email: {}", request.getEmail());
 
         return ResponseEntity.ok(new AuthResponse(newAccessToken));
@@ -66,10 +66,16 @@ public class UserController {
     @PostMapping("/logout")
     public ResponseEntity<?> userLogOut(HttpServletResponse response) {
         log.debug("Logging out user");
-        Cookie cookie = new Cookie("Authorization", null);
-        cookie.setMaxAge(0);
-        cookie.setPath("/");
-        response.addCookie(cookie);
+        Cookie accessTokenCookie = new Cookie("Authorization", null);
+        accessTokenCookie.setMaxAge(0);
+        accessTokenCookie.setPath("/");
+        response.addCookie(accessTokenCookie);
+
+        Cookie refreshTokenCookie = new Cookie("Refresh-Token", null);
+        refreshTokenCookie.setMaxAge(0);
+        refreshTokenCookie.setPath("/");
+        response.addCookie(refreshTokenCookie);
+
         return ResponseEntity.ok().build();
     }
 
