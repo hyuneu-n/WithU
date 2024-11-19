@@ -40,6 +40,12 @@ jobs:
           spring.jpa.properties.hibernate.format_sql=true
           commit.hash=local
           api.server.url=http://localhost:8080
+          
+          # S3
+          cloud.aws.credentials.accessKey=${{ secrets.AWS_ACCESS_KEY_ID }}
+          cloud.aws.credentials.secretKey=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          cloud.aws.s3.bucket=${{ secrets.AWS_BUCKET_NAME }}
+          cloud.aws.s3.bucket-path=${{ secrets.AWS_BUCKET_PATH }}
 
           # JWT Secret
           spring.jwt.secret=${{ secrets.JWT_SECRET }}
@@ -59,6 +65,14 @@ jobs:
           spring.security.oauth2.client.provider.kakao.user-name-attribute=${{ secrets.KAKAO_USER_NAME_ATTRIBUTE }}
           EOT
         shell: bash
+
+      - name: Generate test-application.properties
+        run: |
+          echo "cloud.aws.credentials.accessKey=${{ secrets.AWS_ACCESS_KEY_ID }}" >> ./src/test/resources/application.properties
+          echo "cloud.aws.credentials.secretKey=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ./src/test/resources/application.properties
+          echo "cloud.aws.s3.bucket=${{ secrets.AWS_BUCKET_NAME }}" >> ./src/test/resources/application.properties
+          echo "cloud.aws.s3.bucket-path=${{ secrets.AWS_BUCKET_PATH }}" >> ./src/test/resources/application.properties
+          
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v 3.1.0
