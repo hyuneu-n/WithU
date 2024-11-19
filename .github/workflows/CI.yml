@@ -68,29 +68,12 @@ jobs:
 
       - name: Generate test-application.properties
         run: |
-               cat <<EOT > ./src/test/resources/application.properties
-               cloud.aws.credentials.accessKey=${{ secrets.AWS_ACCESS_KEY_ID }}
-               cloud.aws.credentials.secretKey=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-               cloud.aws.s3.bucket=${{ secrets.AWS_BUCKET_NAME }}
-               cloud.aws.s3.bucket-path=${{ secrets.AWS_BUCKET_PATH }}
-
-#                    # JWT Secret
-#                    spring.jwt.secret=${{ secrets.JWT_SECRET }}
-#
-#                    # Kakao OAuth2 Configuration
-#                    spring.security.oauth2.client.registration.kakao.client-name=${{ secrets.KAKAO_CLIENT_NAME }}
-#                    spring.security.oauth2.client.registration.kakao.client-id=${{ secrets.KAKAO_CLIENT_ID }}
-#                    spring.security.oauth2.client.registration.kakao.client-secret=${{ secrets.KAKAO_CLIENT_SECRET }}
-#                    spring.security.oauth2.client.registration.kakao.redirect-uri=${{ secrets.KAKAO_REDIRECT_URI }}
-#                    spring.security.oauth2.client.registration.kakao.authorization-grant-type=${{ secrets.KAKAO_AUTH_GRANT_TYPE }}
-#                    spring.security.oauth2.client.registration.kakao.client-authentication-method=${{ secrets.KAKAO_AUTH_METHOD }}
-#                    spring.security.oauth2.client.registration.kakao.scope=${{ secrets.KAKAO_SCOPE }}
-#
-#                    spring.security.oauth2.client.provider.kakao.authorization-uri=${{ secrets.KAKAO_AUTHORIZATION_URI }}
-#                    spring.security.oauth2.client.provider.kakao.token-uri=${{ secrets.KAKAO_TOKEN_URI }}
-#                    spring.security.oauth2.client.provider.kakao.user-info-uri=${{ secrets.KAKAO_USER_INFO_URI }}
-#                    spring.security.oauth2.client.provider.kakao.user-name-attribute=${{ secrets.KAKAO_USER_NAME_ATTRIBUTE }}
-               EOT
+          cat <<EOT > ./src/test/resources/application.properties
+          cloud.aws.credentials.accessKey=${{ secrets.AWS_ACCESS_KEY_ID }}
+          cloud.aws.credentials.secretKey=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          cloud.aws.s3.bucket=${{ secrets.AWS_BUCKET_NAME }}
+          cloud.aws.s3.bucket-path=${{ secrets.AWS_BUCKET_PATH }}
+          EOT
         shell: bash
 
       - name: Setup Gradle
