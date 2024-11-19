@@ -64,6 +64,9 @@ jobs:
           spring.security.oauth2.client.provider.kakao.token-uri=${{ secrets.KAKAO_TOKEN_URI }}
           spring.security.oauth2.client.provider.kakao.user-info-uri=${{ secrets.KAKAO_USER_INFO_URI }}
           spring.security.oauth2.client.provider.kakao.user-name-attribute=${{ secrets.KAKAO_USER_NAME_ATTRIBUTE }}
+          
+          front-url=http://localhost:8080
+          redirect-url-suffix=/api/users/home
 
           EOT
         shell: bash
