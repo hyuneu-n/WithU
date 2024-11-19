@@ -73,6 +73,22 @@ jobs:
           echo "cloud.aws.credentials.secretKey=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ./src/test/resources/application.properties
           echo "cloud.aws.s3.bucket=${{ secrets.AWS_BUCKET_NAME }}" >> ./src/test/resources/application.properties
           echo "cloud.aws.s3.bucket-path=${{ secrets.AWS_BUCKET_PATH }}" >> ./src/test/resources/application.properties
+          
+          echo "spring.jwt.secret=${{ secrets.JWT_SECRET }}" >> ./src/test/resources/application.properties
+  
+          echo "spring.security.oauth2.client.registration.kakao.client-name=${{ secrets.KAKAO_CLIENT_NAME }}" >> ./src/test/resources/application.properties
+          echo "spring.security.oauth2.client.registration.kakao.client-id=${{ secrets.KAKAO_CLIENT_ID }}" >> ./src/test/resources/application.properties
+          echo "spring.security.oauth2.client.registration.kakao.client-secret=${{ secrets.KAKAO_CLIENT_SECRET }}" >> ./src/test/resources/application.properties
+          echo "spring.security.oauth2.client.registration.kakao.redirect-uri=${{ secrets.KAKAO_REDIRECT_URI }}" >> ./src/test/resources/application.properties
+          echo "spring.security.oauth2.client.registration.kakao.authorization-grant-type=${{ secrets.KAKAO_AUTH_GRANT_TYPE }}" >> ./src/test/resources/application.properties
+          echo "spring.security.oauth2.client.registration.kakao.client-authentication-method=${{ secrets.KAKAO_AUTH_METHOD }}" >> ./src/test/resources/application.properties
+          echo "spring.security.oauth2.client.registration.kakao.scope=${{ secrets.KAKAO_SCOPE }}" >> ./src/test/resources/application.properties
+          
+          echo "spring.security.oauth2.client.provider.kakao.authorization-uri=${{ secrets.KAKAO_AUTHORIZATION_URI }}" >> ./src/test/resources/application.properties
+          echo "spring.security.oauth2.client.provider.kakao.token-uri=${{ secrets.KAKAO_TOKEN_URI }}" >> ./src/test/resources/application.properties
+          echo "spring.security.oauth2.client.provider.kakao.user-info-uri=${{ secrets.KAKAO_USER_INFO_URI }}" >> ./src/test/resources/application.properties
+          echo "spring.security.oauth2.client.provider.kakao.user-name-attribute=${{ secrets.KAKAO_USER_NAME_ATTRIBUTE }}" >> ./src/test/resources/application.properties
+
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v 3.1.0
