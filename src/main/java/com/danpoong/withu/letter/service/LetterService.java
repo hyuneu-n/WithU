@@ -10,6 +10,6 @@ import java.util.Map;
 public interface LetterService {
     Map<String, String> generatePresignedUrl(Long familyId, Long senderId, Long receiverId);
     LetterResponse saveLetter(LetterReqDto request);
-    List<LetterResponse> getLettersByReceiver(Long receiverId);
+    List<LetterResponse> getAllLettersByReceiver(Long receiverId);
     Map<String, String> getDownloadUrl(Long letterId);
 }

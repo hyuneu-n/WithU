@@ -97,7 +97,7 @@ public class LetterServiceImpl implements LetterService{
 
     @Override
     @Transactional
-    public List<LetterResponse> getLettersByReceiver(Long receiverId) {
+    public List<LetterResponse> getAllLettersByReceiver(Long receiverId) {
         List<Letter> letters = letterRepository.findAllByReceiverId(receiverId);
         return letters.stream()
                 .map(LetterResponse::new)

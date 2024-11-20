@@ -37,9 +37,9 @@ public class LetterController {
     }
 
     @GetMapping
-    @Operation(summary = "Get letters by receiver", description = "받은 사람 기준으로 모든 편지를 조회합니다.")
+    @Operation(summary = "Get AllLetters by receiver", description = "받은 사람 기준으로 모든 편지를 조회합니다.")
     public ResponseEntity<List<LetterResponse>> getLettersByReceiver(@RequestParam Long receiverId) {
-        List<LetterResponse> responses = letterService.getLettersByReceiver(receiverId);
+        List<LetterResponse> responses = letterService.getAllLettersByReceiver(receiverId);
         return ResponseEntity.status(HttpStatus.OK).body(responses);
     }
 
