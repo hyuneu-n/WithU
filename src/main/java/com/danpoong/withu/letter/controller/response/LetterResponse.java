@@ -15,6 +15,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class LetterResponse {
     private Long letterId;
+    private Long senderId;
+    private Long receiverId;
+    private Long familyId;
     private LetterType letterType;
     private String keyName;
     private String textContent;
@@ -24,6 +27,9 @@ public class LetterResponse {
 
     public LetterResponse(Letter letter) {
         this.letterId = letter.getId();
+        this.senderId = letter.getSenderId();
+        this.receiverId = letter.getReceiverId();
+        this.familyId = letter.getFamilyId();
         this.letterType = letter.getLetterType();
         this.keyName = letter.getKeyName();
         this.textContent = letter.getTextContent();
