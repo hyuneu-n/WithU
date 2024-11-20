@@ -116,6 +116,18 @@ public class LetterServiceImpl implements LetterService{
 
     @Override
     @Transactional
+    public LetterResponse updateLetterAsSaved(Long letterId) {
+        Letter letter = letterRepository.findById(letterId)
+                .orElseThrow(() -> new ResourceNotFoundException("Letter", letterId));
+
+        letter.setSaved();
+        letterRepository.save(letter);
+
+        return new LetterResponse(letter);
+    }
+
+    @Override
+    @Transactional
     public LetterResponse deleteLetter(Long letterId) {
         Letter letter = letterRepository.findById(letterId)
                 .orElseThrow(() -> new ResourceNotFoundException("Letter", letterId));
@@ -125,7 +137,6 @@ public class LetterServiceImpl implements LetterService{
 
         return deletedLetterResponse;
     }
-
 
     @Override
     @Transactional
@@ -141,10 +152,20 @@ public class LetterServiceImpl implements LetterService{
 
         String presignedUrl = s3Presigner.presignGetObject(presignRequest).url().toString();
 
-        // 결과 반환
         Map<String, String> response = new HashMap<>();
         response.put("presignedUrl", presignedUrl);
         response.put("keyName", keyName);
         return response;
+    }
+
+    @Override
+    @Transactional
+    public LetterResponse changeLikeState(Long letterId) {
+        Letter letter = letterRepository.findById(letterId)
+                .orElseThrow(() -> new ResourceNotFoundException("Letter", letterId));
+
+        letter.changeIsLiked();
+
+        return new LetterResponse(letterRepository.save(letter));
     }
 }

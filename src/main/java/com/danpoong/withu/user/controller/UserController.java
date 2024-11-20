@@ -124,10 +124,4 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
-
-    @Operation(summary = "[TEST] 홈 화면", description = "로그인 후 리다이렉트 테스트")
-    @GetMapping("/home")
-    public ResponseEntity<String> home() {
-        return ResponseEntity.ok("로그인 성공!");
-    }
 }

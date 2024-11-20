@@ -44,4 +44,10 @@ public class Letter extends BaseTimeEntity {
 
     @Column(nullable = false)
     private Boolean isLiked;
+    public void setSaved() {
+        this.isSaved = true;
+    }
+    public void changeIsLiked() {
+        this.isLiked = this.isLiked == null ? true : !this.isLiked;
+    }
 }

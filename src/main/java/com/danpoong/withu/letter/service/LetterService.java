@@ -13,4 +13,6 @@ public interface LetterService {
     List<LetterResponse> getNullSavedLetters(Long receiverId);
     Map<String, String> getDownloadUrl(Long letterId);
     LetterResponse deleteLetter(Long letterId);
+    LetterResponse updateLetterAsSaved(Long letterId);
+    LetterResponse changeLikeState(Long letterId);
 }
