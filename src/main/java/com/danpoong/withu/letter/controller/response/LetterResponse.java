@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Data
 @Getter
 @Builder
@@ -18,6 +20,7 @@ public class LetterResponse {
     private String textContent;
     private Boolean isSaved;
     private Boolean isLiked;
+    private LocalDateTime createdDate;
 
     public LetterResponse(Letter letter) {
         this.letterId = letter.getId();
@@ -26,5 +29,6 @@ public class LetterResponse {
         this.textContent = letter.getTextContent();
         this.isSaved = letter.getIsSaved();
         this.isLiked = letter.getIsLiked();
+        this.createdDate = letter.getCreatedDate();
     }
 }

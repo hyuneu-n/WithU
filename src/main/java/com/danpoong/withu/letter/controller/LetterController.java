@@ -3,6 +3,7 @@ package com.danpoong.withu.letter.controller;
 import com.danpoong.withu.config.auth.jwt.JwtUtil;
 import com.danpoong.withu.letter.controller.response.LetterResponse;
 import com.danpoong.withu.letter.dto.LetterReqDto;
+import com.danpoong.withu.letter.dto.TextLetterRequestDto;
 import com.danpoong.withu.letter.service.LetterService;
 import com.danpoong.withu.user.domain.User;
 import com.danpoong.withu.user.service.UserService;
@@ -52,12 +53,23 @@ public class LetterController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PostMapping
+    @PostMapping("/file")
     @Operation(summary = "편지 저장(아직 받은 사람은 확인 x)", description = "보낸 편지의 정보를 저장합니다.")
-    public ResponseEntity<LetterResponse> saveLetter(@RequestBody LetterReqDto request) {
-        LetterResponse response = letterService.saveLetter(request);
+    public ResponseEntity<LetterResponse> saveLetter(@RequestHeader("Authorization") String bearerToken,
+                                                     @RequestBody LetterReqDto request) {
+        LetterResponse response = letterService.saveLetter(extractUserId(bearerToken), request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
+    @PostMapping("/text")
+    @Operation(summary = "텍스트 편지 저장", description = "S3 접근 없이 텍스트 형태의 편지를 저장합니다.")
+    public ResponseEntity<LetterResponse> saveTextLetter(@RequestHeader("Authorization") String bearerToken,
+                                                         @RequestBody TextLetterRequestDto request) {
+
+        LetterResponse response = letterService.saveTextLetter(extractUserId(bearerToken), request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
 
     @GetMapping("/saved")
     @Operation(summary = "모든 편지 조회", description = "사용자가 보관한 모든 편지를 조회합니다.")
