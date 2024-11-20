@@ -8,5 +8,7 @@ import java.util.Optional;
 
 public interface LetterRepository extends JpaRepository<Letter, Long> {
     List<Letter> findAllByReceiverId(Long receiverId);
+    List<Letter> findAllByReceiverIdAndIsSaved(Long receiverId, Boolean isSaved);
+    List<Letter> findAllByReceiverIdAndIsSavedIsNull(Long receiverId);
 
 }

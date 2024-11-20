@@ -1,5 +1,6 @@
 package com.danpoong.withu.user.service;
 
+import com.danpoong.withu.common.exception.ResourceNotFoundException;
 import com.danpoong.withu.user.domain.User;
 import com.danpoong.withu.user.dto.UserRegisterRequest;
 import com.danpoong.withu.user.dto.UserResponse;
@@ -9,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -120,4 +122,5 @@ public class UserService {
     public void deleteAccount(Long userId) {
         userRepository.deleteById(userId);
     }
+
 }
