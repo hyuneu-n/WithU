@@ -40,7 +40,6 @@ public class Letter extends BaseTimeEntity {
 
     private String textContent;
 
-    @Column(nullable = false)
     private Boolean isSaved;
 
     @Column(nullable = false)

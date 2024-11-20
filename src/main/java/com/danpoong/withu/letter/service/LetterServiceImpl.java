@@ -10,17 +10,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -97,12 +93,39 @@ public class LetterServiceImpl implements LetterService{
 
     @Override
     @Transactional
-    public List<LetterResponse> getAllLettersByReceiver(Long receiverId) {
-        List<Letter> letters = letterRepository.findAllByReceiverId(receiverId);
+    public List<LetterResponse> getSavedAllLetters(Long receiverId) {
+        List<Letter> letters = letterRepository.findAllByReceiverIdAndIsSaved(receiverId, true); // isSaved = true
+
+        return letters.stream()
+                .sorted(Comparator
+                        .comparing(Letter::getCreatedDate)
+                        .thenComparing((l1, l2) -> l2.getId().compareTo(l1.getId()))
+                )
+                .map(LetterResponse::new)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public List<LetterResponse> getNullSavedLetters(Long receiverId) {
+        List<Letter> letters = letterRepository.findAllByReceiverIdAndIsSavedIsNull(receiverId);
         return letters.stream()
                 .map(LetterResponse::new)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    @Transactional
+    public LetterResponse deleteLetter(Long letterId) {
+        Letter letter = letterRepository.findById(letterId)
+                .orElseThrow(() -> new ResourceNotFoundException("Letter", letterId));
+
+        LetterResponse deletedLetterResponse = new LetterResponse(letter);
+        letterRepository.delete(letter);
+
+        return deletedLetterResponse;
+    }
+
 
     @Override
     @Transactional

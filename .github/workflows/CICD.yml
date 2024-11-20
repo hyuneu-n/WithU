@@ -49,7 +49,7 @@ jobs:
           spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
           spring.jpa.properties.hibernate.show_sql=true
           spring.jpa.properties.hibernate.format_sql=true
-          spring.jpa.hibernate.ddl-auto=create
+          spring.jpa.hibernate.ddl-auto=update
           
           app.allowed.origins=${{ secrets.ALLOWED_ORIGINS }}
           
