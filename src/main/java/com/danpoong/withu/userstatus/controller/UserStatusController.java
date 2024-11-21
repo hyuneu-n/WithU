@@ -33,40 +33,62 @@ public class UserStatusController {
     private final JwtUtil jwtUtil;
     private final UserService userService;
 
-    @Operation(summary = "사용자 상태 작성", description = "사용자의 상태 작성")
-    @PostMapping("/create")
-    public ResponseEntity<UserStatusResponseDto> createStatus(
+    // === 이모지 관련 기능 ===
+
+    @Operation(summary = "이모지 작성", description = "사용자의 상태에 이모지를 추가")
+    @PostMapping("/emoji")
+    public ResponseEntity<UserStatusResponseDto> createEmoji(
             @RequestHeader("Authorization") String bearerToken,
-            @RequestParam(required = false) UserStatus.StatusEmoji emoji,
-            @RequestParam(required = false) String text) {
+            @RequestParam UserStatus.StatusEmoji emoji) {
 
         Long userId = extractUserId(bearerToken);
+        UserStatus userStatus = userStatusService.createOrUpdateEmoji(userId, emoji);
 
-        // 둘 중 하나만 설정되도록 처리
-        if (emoji != null && text != null) {
-            text = null; // text가 들어오면 emoji만 유지
-        }
-
-        UserStatus userStatus = userStatusService.createOrUpdateStatus(userId, emoji, text);
         return ResponseEntity.ok(new UserStatusResponseDto(userStatus));
     }
 
-    @Operation(summary = "사용자 상태 업데이트", description = "사용자의 상태를 업데이트")
-    @PutMapping("/update")
-    public ResponseEntity<UserStatusResponseDto> updateStatus(
+    @Operation(summary = "이모지 삭제", description = "사용자의 상태에서 이모지를 삭제")
+    @DeleteMapping("/emoji")
+    public ResponseEntity<String> deleteEmoji(@RequestHeader("Authorization") String bearerToken) {
+        Long userId = extractUserId(bearerToken);
+        userStatusService.deleteEmoji(userId);
+        return ResponseEntity.ok("이모지가 성공적으로 삭제되었습니다.");
+    }
+
+    // === 메모 관련 기능 ===
+
+    @Operation(summary = "메모 작성", description = "사용자의 상태에 메모를 추가")
+    @PostMapping("/memo")
+    public ResponseEntity<UserStatusResponseDto> createMemo(
             @RequestHeader("Authorization") String bearerToken,
-            @RequestParam(required = false) UserStatus.StatusEmoji emoji,
-            @RequestParam(required = false) String text) {
+            @RequestParam String text) {
 
         Long userId = extractUserId(bearerToken);
+        UserStatus userStatus = userStatusService.createOrUpdateMemo(userId, text);
 
-        // 둘 중 하나만 설정되도록 처리
-        if (emoji != null && text != null) {
-            text = null; // text가 들어오면 emoji만 유지
-        }
+        return ResponseEntity.ok(new UserStatusResponseDto(userStatus));
+    }
 
-        UserStatus updatedStatus = userStatusService.createOrUpdateStatus(userId, emoji, text);
-        return ResponseEntity.ok(new UserStatusResponseDto(updatedStatus));
+    @Operation(summary = "메모 삭제", description = "사용자의 상태에서 메모를 삭제")
+    @DeleteMapping("/memo")
+    public ResponseEntity<String> deleteMemo(@RequestHeader("Authorization") String bearerToken) {
+        Long userId = extractUserId(bearerToken);
+        userStatusService.deleteMemo(userId);
+        return ResponseEntity.ok("메모가 성공적으로 삭제되었습니다.");
+    }
+
+    // === 상태 조회 ===
+
+    @Operation(summary = "나의 상태 조회", description = "현재 로그인한 사용자의 상태를 조회")
+    @GetMapping("/mystatus")
+    public ResponseEntity<UserStatusResponseDto> getMyStatus(
+            @RequestHeader("Authorization") String bearerToken) {
+
+        Long userId = extractUserId(bearerToken);
+        UserStatus userStatus = userStatusService.getStatusByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("사용자의 상태를 찾을 수 없습니다."));
+
+        return ResponseEntity.ok(new UserStatusResponseDto(userStatus));
     }
 
     @Operation(summary = "가족 그룹 멤버들의 상태 조회", description = "가족 그룹에 속한 모든 멤버들의 상태를 조회")
@@ -96,31 +118,6 @@ public class UserStatusController {
             log.error("가족 구성원이 없습니다: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(List.of());
         }
-    }
-
-    @Operation(summary = "나의 상태 조회", description = "현재 로그인한 사용자의 상태를 조회")
-    @GetMapping("/my-status")
-    public ResponseEntity<UserStatusResponseDto> getMyStatus(
-            @RequestHeader("Authorization") String bearerToken) {
-
-        Long userId = extractUserId(bearerToken);
-
-        // 사용자 상태 조회
-        UserStatus userStatus = userStatusService.getStatusByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("사용자의 상태를 찾을 수 없습니다."));
-
-        return ResponseEntity.ok(new UserStatusResponseDto(userStatus));
-    }
-
-    @Operation(summary = "사용자 상태 삭제", description = "사용자 상태 삭제")
-    @DeleteMapping("/delete")
-    public ResponseEntity<String> deleteStatus(
-            @RequestHeader("Authorization") String bearerToken) {
-
-        Long userId = extractUserId(bearerToken);
-        userStatusService.deleteStatusByUserId(userId);
-
-        return ResponseEntity.ok("상태가 성공적으로 삭제되었습니다.");
     }
 
     private Long extractUserId(String bearerToken) {
