@@ -128,4 +128,7 @@ public class UserService {
         userRepository.deleteById(userId);
     }
 
+    public List<User> findUsersByFamilyId(Long familyId) {
+        return userRepository.findAllByFamily_FamilyId(familyId);
+    }
 }
