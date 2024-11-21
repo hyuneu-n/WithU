@@ -14,13 +14,13 @@ public class RandomMessageInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        // 데이터가 없는 경우에만 초기 데이터를 삽입
         if (randomMessageRepository.count() == 0) {
-            randomMessageRepository.save(new RandomMessage("안녕하세요!"));
-            randomMessageRepository.save(new RandomMessage("좋은 하루 되세요!"));
-            randomMessageRepository.save(new RandomMessage("화이팅!"));
-            randomMessageRepository.save(new RandomMessage("오늘도 즐거운 하루!"));
-            randomMessageRepository.save(new RandomMessage("항상 행복하세요!"));
+            randomMessageRepository.save(new RandomMessage("24시간이내 편지를 보관해주세요"));
+            randomMessageRepository.save(new RandomMessage("편지를 보관하지 않으면 사라져요"));
+            randomMessageRepository.save(new RandomMessage("오늘은 어떤 하루였나요?"));
+            randomMessageRepository.save(new RandomMessage("편지에 하트를 눌러봐요!"));
+            randomMessageRepository.save(new RandomMessage("오늘의 편지 볼까요?"));
+            randomMessageRepository.save(new RandomMessage("편지를 보내볼까요?"));
         }
     }
 }
