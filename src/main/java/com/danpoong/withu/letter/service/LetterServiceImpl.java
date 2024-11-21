@@ -3,8 +3,11 @@ package com.danpoong.withu.letter.service;
 import com.danpoong.withu.common.exception.ResourceNotFoundException;
 import com.danpoong.withu.letter.controller.response.LetterResponse;
 import com.danpoong.withu.letter.domain.Letter;
+import com.danpoong.withu.letter.domain.LetterType;
 import com.danpoong.withu.letter.dto.LetterReqDto;
+import com.danpoong.withu.letter.dto.TextLetterRequestDto;
 import com.danpoong.withu.letter.repository.LetterRepository;
+import com.danpoong.withu.user.domain.User;
 import com.danpoong.withu.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -65,10 +68,10 @@ public class LetterServiceImpl implements LetterService{
 
     @Override
     @Transactional
-    public LetterResponse saveLetter(LetterReqDto request) {
+    public LetterResponse saveLetter(Long userId, LetterReqDto request) {
 
-        if (!userRepository.existsByIdAndFamily_FamilyId(request.getSenderId(), request.getFamilyId())) {
-            throw new IllegalArgumentException("Sender ID " + request.getSenderId() +
+        if (!userRepository.existsByIdAndFamily_FamilyId(userId, request.getFamilyId())) {
+            throw new IllegalArgumentException("Sender ID " + userId +
                     " is not a member of Family ID " + request.getFamilyId());
         }
         if (!userRepository.existsByIdAndFamily_FamilyId(request.getReceiverId(), request.getFamilyId())) {
@@ -77,18 +80,45 @@ public class LetterServiceImpl implements LetterService{
         }
 
         Letter letter = Letter.builder()
-                .senderId(request.getSenderId())
+                .senderId(userId)
                 .receiverId(request.getReceiverId())
                 .familyId(request.getFamilyId())
                 .scheduleId(request.getScheduleId())
                 .letterType(request.getLetterType())
                 .keyName(request.getKeyName())
                 .textContent(request.getTextContent())
-                .isSaved(true)
                 .isLiked(false)
                 .build();
 
         return new LetterResponse(letterRepository.save(letter));
+    }
+
+    @Override
+    @Transactional
+    public LetterResponse saveTextLetter(Long userId, TextLetterRequestDto request) {
+
+        if (!userRepository.existsByIdAndFamily_FamilyId(userId, request.getFamilyId())) {
+            throw new IllegalArgumentException("Sender ID " + userId +
+                    " is not a member of Family ID " + request.getFamilyId());
+        }
+
+        if (!userRepository.existsByIdAndFamily_FamilyId(request.getReceiverId(), request.getFamilyId())) {
+            throw new IllegalArgumentException("Receiver ID " + request.getReceiverId() +
+                    " is not a member of Family ID " + request.getFamilyId());
+        }
+
+        Letter newLetter = Letter.builder()
+                .senderId(userId)
+                .receiverId(request.getReceiverId())
+                .familyId(request.getFamilyId())
+                .letterType(LetterType.TEXT)
+                .textContent(request.getTextContent())
+                .isLiked(false)
+                .build();
+
+        Letter savedLetter = letterRepository.save(newLetter);
+
+        return new LetterResponse(savedLetter);
     }
 
     @Override
