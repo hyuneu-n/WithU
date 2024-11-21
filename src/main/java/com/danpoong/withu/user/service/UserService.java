@@ -1,6 +1,7 @@
 package com.danpoong.withu.user.service;
 
 import com.danpoong.withu.common.exception.ResourceNotFoundException;
+import com.danpoong.withu.letter.repository.LetterRepository;
 import com.danpoong.withu.user.domain.User;
 import com.danpoong.withu.user.dto.UserRegisterRequest;
 import com.danpoong.withu.user.dto.UserResponse;
@@ -8,6 +9,7 @@ import com.danpoong.withu.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -18,6 +20,7 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final LetterRepository letterRepository;
 
     // 첫 로그인 확인
     public Boolean isFirstLogin(String email) {
@@ -101,15 +104,17 @@ public class UserService {
         userRepository.save(user);
     }
 
-//    // 받은 편지 수 조회
-//    public int getReceivedLettersCount(Long userId) {
-//        return letterRepository.countByRecipientId(userId);
-//    }
+    // 받은 편지 수 조회
+    @Transactional(readOnly = true)
+    public int getReceivedLettersCount(Long userId) {
+        return letterRepository.countByReceiverId(userId);
+    }
 
-//    // 보낸 편지 수 조회
-//    public int getSentLettersCount(Long userId) {
-//        return letterRepository.countBySenderId(userId);
-//    }
+    // 보낸 편지 수 조회
+    @Transactional(readOnly = true)
+    public int getSentLettersCount(Long userId) {
+        return letterRepository.countBySenderId(userId);
+    }
 
     // 로그아웃
     public void logout(Long userId) {
