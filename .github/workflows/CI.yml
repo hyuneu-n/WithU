@@ -41,8 +41,6 @@ jobs:
           commit.hash=local
           api.server.url=http://localhost:8080
           
-          app.allowed.origins=${{ secrets.ALLOWED_ORIGINS }}
-          
           # S3
           cloud.aws.credentials.accessKey=${{ secrets.AWS_ACCESS_KEY_ID }}
           cloud.aws.credentials.secretKey=${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -97,8 +95,6 @@ jobs:
           echo "front-url=http://localhost:8080" >> ./src/test/resources/application.properties
           echo "redirect-url-suffix=/api/users/home" >> ./src/test/resources/application.properties
           
-          echo "app.allowed.origins=${{ secrets.ALLOWED_ORIGINS }}" >> ./src/test/resources/application.properties
-
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v 3.1.0
 
