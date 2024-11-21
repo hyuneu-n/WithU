@@ -33,34 +33,65 @@ public class UserStatusService {
     }
 
     @Transactional
-    public void deleteStatusByUserId(Long userId) {
+    public UserStatus createOrUpdateEmoji(Long userId, UserStatus.StatusEmoji emoji) {
         User user = userService.findById(userId);
-        userStatusRepository.deleteByUser(user);
+        List<UserStatus> userStatuses = userStatusRepository.findByUser(user);
+
+        UserStatus userStatus;
+        if (userStatuses.isEmpty()) {
+            userStatus = new UserStatus(user, null, null, LocalDateTime.now().plusHours(24));
+        } else {
+            userStatus = userStatuses.get(0); // 첫 번째 상태를 업데이트
+        }
+
+        userStatus.setStatusEmoji(emoji);
+        userStatus.setExpiresAt(LocalDateTime.now().plusHours(24)); // 만료 시간 갱신
+        return userStatusRepository.save(userStatus);
     }
 
     @Transactional
-    public UserStatus createOrUpdateStatus(Long userId, StatusEmoji emoji, String text) {
+    public void deleteEmoji(Long userId) {
         User user = userService.findById(userId);
         List<UserStatus> userStatuses = userStatusRepository.findByUser(user);
-        UserStatus userStatus;
-
-        // 둘 중 하나만 설정되도록 처리
-        if (emoji != null && text != null) {
-            text = null; // text가 들어오면 emoji만 유지
-        }
 
         if (userStatuses.isEmpty()) {
-            // 상태가 없을 경우 새로 생성
-            userStatus = new UserStatus(user, emoji, text, LocalDateTime.now().plusHours(24));
-        } else {
-            // 상태가 이미 있을 경우 첫번째 항목 업데이트
-            userStatus = userStatuses.get(0);
-            userStatus.setStatusEmoji(emoji);
-            userStatus.setStatusText(text);
-            userStatus.setExpiresAt(LocalDateTime.now().plusHours(24)); // 만료 시간 설정
+            throw new RuntimeException("사용자의 상태를 찾을 수 없습니다.");
         }
 
+        UserStatus userStatus = userStatuses.get(0);
+        userStatus.setStatusEmoji(null);
+        userStatusRepository.save(userStatus);
+    }
+
+    @Transactional
+    public UserStatus createOrUpdateMemo(Long userId, String text) {
+        User user = userService.findById(userId);
+        List<UserStatus> userStatuses = userStatusRepository.findByUser(user);
+
+        UserStatus userStatus;
+        if (userStatuses.isEmpty()) {
+            userStatus = new UserStatus(user, null, null, LocalDateTime.now().plusHours(24));
+        } else {
+            userStatus = userStatuses.get(0); // 첫 번째 상태를 업데이트
+        }
+
+        userStatus.setStatusText(text);
+        userStatus.setExpiresAt(LocalDateTime.now().plusHours(24)); // 만료 시간 갱신
         return userStatusRepository.save(userStatus);
+    }
+
+    @Transactional
+    public void deleteMemo(Long userId) {
+        User user = userService.findById(userId);
+        List<UserStatus> userStatuses = userStatusRepository.findByUser(user);
+
+        if (userStatuses.isEmpty()) {
+            throw new RuntimeException("사용자의 상태를 찾을 수 없습니다.");
+        }
+
+        UserStatus userStatus = userStatuses.get(0);
+        userStatus.setStatusText(null);
+        userStatusRepository.save(userStatus);
     }
 
     @Transactional(readOnly = true)
@@ -68,6 +99,10 @@ public class UserStatusService {
         User user = userService.findById(userId);
         List<UserStatus> userStatuses = userStatusRepository.findByUser(user);
 
-        return userStatuses.isEmpty() ? Optional.empty() : Optional.of(userStatuses.get(0));
+        if (userStatuses.isEmpty()) {
+            return Optional.empty();
+        } else {
+            return Optional.of(userStatuses.get(0));
+        }
     }
 }
