@@ -32,7 +32,7 @@ public class ScheduleController {
     private final JwtUtil jwtUtil;
     private final UserService userService;
 
-
+    @Operation(summary = "일정 등록", description = "일정 등록")
     @PostMapping("/add")
     public ResponseEntity<ScheduleResponseDto> addSchedule(
             @RequestHeader("Authorization") String bearerToken,
