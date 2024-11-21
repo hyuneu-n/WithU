@@ -29,26 +29,26 @@ public class MyPageController {
         User user = userService.findById(userId);
 
         // D+N 계산
-        long daysTogether = ChronoUnit.DAYS.between(user.getCreatedAt(), LocalDate.now());
+        long daysTogether = ChronoUnit.DAYS.between(user.getCreatedAt(), LocalDate.now()) + 1;
         return ResponseEntity.ok(daysTogether);
     }
 
     // 편지 개발 후 생성 예정
-//    @Operation(summary = "받은 편지 수 조회", description = "받은 편지 수")
-//    @GetMapping("/letters/received")
-//    public ResponseEntity<Integer> getReceivedLetters(@RequestHeader("Authorization") String bearerToken) {
-//        Long userId = extractUserId(bearerToken);
-//        int receivedLetters = userService.getReceivedLettersCount(userId);
-//        return ResponseEntity.ok(receivedLetters);
-//    }
-//
-//    @Operation(summary = "보낸 편지 수 조회", description = "보낸 편지 수")
-//    @GetMapping("/letters/sent")
-//    public ResponseEntity<Integer> getSentLetters(@RequestHeader("Authorization") String bearerToken) {
-//        Long userId = extractUserId(bearerToken);
-//        int sentLetters = userService.getSentLettersCount(userId);
-//        return ResponseEntity.ok(sentLetters);
-//    }
+    @Operation(summary = "받은 편지 수 조회", description = "받은 편지 수")
+    @GetMapping("/letters/received")
+    public ResponseEntity<Integer> getReceivedLetters(@RequestHeader("Authorization") String bearerToken) {
+        Long userId = extractUserId(bearerToken);
+        int receivedLetters = userService.getReceivedLettersCount(userId);
+        return ResponseEntity.ok(receivedLetters);
+    }
+
+    @Operation(summary = "보낸 편지 수 조회", description = "보낸 편지 수")
+    @GetMapping("/letters/sent")
+    public ResponseEntity<Integer> getSentLetters(@RequestHeader("Authorization") String bearerToken) {
+        Long userId = extractUserId(bearerToken);
+        int sentLetters = userService.getSentLettersCount(userId);
+        return ResponseEntity.ok(sentLetters);
+    }
 
     @Operation(summary = "닉네임 수정", description = "닉네임 수정")
     @PutMapping("/nickname")
