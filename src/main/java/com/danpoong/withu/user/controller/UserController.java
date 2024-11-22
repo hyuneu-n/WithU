@@ -20,6 +20,8 @@ import com.danpoong.withu.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import java.util.Collections;
+
 @RestController
 @Slf4j
 @RequiredArgsConstructor
@@ -44,12 +46,15 @@ public class UserController {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 리프레시 토큰");
     }
 
-    String newAccessToken =
-            jwtUtil.createAccessToken(
-                    email, userService.getUserRole(email), userService.getFamilyId(email));
-    log.info("새로운 액세스 토큰 생성 완료 - 이메일: {}", email);
+    String newAccessToken = jwtUtil.createAccessToken(
+            email, userService.getUserRole(email), userService.getFamilyId(email));
+    String newRefreshToken = jwtUtil.createRefreshToken(email, userService.getFamilyId(email));
 
-    return ResponseEntity.ok(new AuthResponse(newAccessToken));
+    // UserService를 통해 Refresh Token 업데이트
+    userService.updateRefreshToken(email, newRefreshToken);
+
+    log.info("새로운 액세스 및 리프레시 토큰 생성 완료 - 이메일: {}", email);
+    return ResponseEntity.ok(new AuthResponse(newAccessToken, newRefreshToken));
   }
 
   @Operation(
@@ -65,32 +70,29 @@ public class UserController {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 리프레시 토큰");
     }
 
-    String newAccessToken =
-            jwtUtil.createAccessToken(
-                    request.getEmail(),
-                    userService.getUserRole(request.getEmail()),
-                    userService.getFamilyId(request.getEmail()));
-    log.info("새로운 액세스 토큰 생성 완료 - 이메일: {}", request.getEmail());
+    String newAccessToken = jwtUtil.createAccessToken(
+            request.getEmail(),
+            userService.getUserRole(request.getEmail()),
+            userService.getFamilyId(request.getEmail()));
+    String newRefreshToken = jwtUtil.createRefreshToken(request.getEmail(), userService.getFamilyId(request.getEmail()));
 
-    return ResponseEntity.ok(new AuthResponse(newAccessToken));
+    log.info("새로운 액세스 및 리프레시 토큰 생성 완료 - 이메일: {}", request.getEmail());
+    return ResponseEntity.ok(new AuthResponse(newAccessToken, newRefreshToken));
   }
 
-  @Operation(summary = "로그아웃", description = "사용자의 인증 쿠키를 삭제")
   @PostMapping("/logout")
-  public ResponseEntity<?> userLogOut(HttpServletResponse response) {
+  public ResponseEntity<?> userLogOut(@RequestHeader("Authorization") String token) {
     log.info("로그아웃 요청 처리 중");
-    Cookie accessTokenCookie = new Cookie("Authorization", null);
-    accessTokenCookie.setMaxAge(0);
-    accessTokenCookie.setPath("/");
-    response.addCookie(accessTokenCookie);
-
-    Cookie refreshTokenCookie = new Cookie("Refresh-Token", null);
-    refreshTokenCookie.setMaxAge(0);
-    refreshTokenCookie.setPath("/");
-    response.addCookie(refreshTokenCookie);
-
-    log.info("인증 쿠키 삭제 완료");
-    return ResponseEntity.ok().build();
+    try {
+      String email = jwtUtil.extractEmail(token.substring(7));
+      userService.invalidateRefreshToken(email); // 데이터베이스에서 Refresh Token 삭제
+      log.info("사용자 로그아웃 완료 - 이메일: {}", email);
+      return ResponseEntity.ok("로그아웃 완료");
+    } catch (Exception e) {
+      log.error("로그아웃 처리 중 오류 발생: {}", e.getMessage(), e);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+              .body("로그아웃 처리 중 오류 발생");
+    }
   }
 
   @Operation(summary = "[TEST] 사용자 권한 조회", description = "사용자의 권한 정보를 반환")
@@ -109,19 +111,20 @@ public class UserController {
     }
   }
 
-  @Operation(summary = "[TEST] 첫 로그인 여부 확인", description = "사용자가 첫 로그인을 했는지 확인")
   @PostMapping("/check-first-login")
-  public ResponseEntity<Boolean> checkFirstLogin(@RequestHeader("Authorization") String token) {
+  public ResponseEntity<?> checkFirstLogin(@RequestHeader("Authorization") String token) {
     log.info("첫 로그인 여부 확인 요청 처리 중");
     try {
       String email = jwtUtil.extractEmail(token.substring(7));
       log.debug("토큰에서 추출한 이메일: {}", email);
       boolean isFirstLogin = userService.isFirstLogin(email);
+
       log.info("첫 로그인 여부 확인 완료 - 이메일: {}, 첫 로그인 여부: {}", email, isFirstLogin);
-      return ResponseEntity.ok(isFirstLogin);
+      return ResponseEntity.ok(Collections.singletonMap("isFirstLogin", isFirstLogin));
     } catch (Exception e) {
       log.error("첫 로그인 여부 확인 중 오류 발생: {}", e.getMessage(), e);
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+              .body(Collections.singletonMap("error", "오류 발생: " + e.getMessage()));
     }
   }
 

@@ -70,14 +70,13 @@ public class SecurityConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(
-        Arrays.asList(
-            "http://localhost:3000", "http://localhost:8080", "http://15.164.29.113:8080"));
+    configuration.setAllowedOrigins(Arrays.asList(
+            "http://localhost:3000", "http://localhost:8080", "http://15.164.29.113:8080", "exp://*"));
     configuration.setAllowedMethods(Collections.singletonList("*"));
     configuration.setAllowedHeaders(Collections.singletonList("*"));
-    configuration.setAllowCredentials(true);
+    configuration.setAllowCredentials(true); // 중요한 설정
+    configuration.setExposedHeaders(Arrays.asList("Authorization", "Refresh-Token"));
     configuration.setMaxAge(3600L);
-    configuration.setExposedHeaders(Arrays.asList("Set-Cookie", "Authorization"));
 
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);
