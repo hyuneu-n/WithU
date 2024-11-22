@@ -40,51 +40,35 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
   @Override
   public void onAuthenticationSuccess(
-      HttpServletRequest request, HttpServletResponse response, Authentication authentication)
-      throws IOException {
+          HttpServletRequest request, HttpServletResponse response, Authentication authentication)
+          throws IOException {
 
     // 사용자 이메일 가져오기
     String email = authentication.getName();
     log.info("Authenticated email: {}", email);
 
-    // 역할 가져오기
+    // 역할 및 유저 정보 가져오기
     String role =
-        authentication.getAuthorities().stream()
-            .map(GrantedAuthority::getAuthority)
-            .findFirst()
-            .orElse(DEFAULT_ROLE);
-    log.info("User role: {}", role);
-
-    // 유저 정보 가져오기
+            authentication.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .findFirst()
+                    .orElse(DEFAULT_ROLE);
     User user =
-        userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+            userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
 
-    // 가족 ID 가져오기
+    // JWT 토큰 생성
     Long familyId = user.getFamily() != null ? user.getFamily().getFamilyId() : null;
-
-    // 토큰 생성
     String accessToken = jwtUtil.createAccessToken(email, role, familyId);
     String refreshToken = jwtUtil.createRefreshToken(email, familyId);
 
-    // Refresh 토큰 저장
+    // Refresh Token 저장
     user.setRefreshToken(refreshToken);
     userRepository.save(user);
 
-    // 토큰 쿠키에 추가
-    response.addCookie(createCookie(AUTHORIZATION_COOKIE, accessToken, ACCESS_TOKEN_MAX_AGE));
-    response.addCookie(createCookie(REFRESH_TOKEN_COOKIE, refreshToken, REFRESH_TOKEN_MAX_AGE));
-    log.info("Access and Refresh tokens added to cookies for email: {}", email);
-
-    // 리다이렉트 URL 생성 및 리다이렉트
-    String redirectUrl = frontUrl + redirectUrlSuffix;
-    response.sendRedirect(redirectUrl);
-  }
-
-  private Cookie createCookie(String name, String value, int maxAge) {
-    Cookie cookie = new Cookie(name, value);
-    cookie.setMaxAge(maxAge);
-    cookie.setHttpOnly(true);
-    cookie.setPath("/");
-    return cookie;
+    // JSON으로 응답
+    response.setContentType("application/json");
+    response.setCharacterEncoding("UTF-8");
+    response.getWriter().write(String.format(
+            "{\"accessToken\": \"%s\", \"refreshToken\": \"%s\"}", accessToken, refreshToken));
   }
 }

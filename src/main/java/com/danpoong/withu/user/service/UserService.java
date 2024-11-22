@@ -151,4 +151,19 @@ public class UserService {
   public List<User> findAllUsersWithNotificationSettings() {
     return userRepository.findAllByPushNotificationTimeIsNotNull();
   }
+
+  public void invalidateRefreshToken(String email) {
+    User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+    user.setRefreshToken(null);
+    userRepository.save(user);
+  }
+
+  public void updateRefreshToken(String email, String refreshToken) {
+    User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+
+    user.setRefreshToken(refreshToken);
+    userRepository.save(user);
+    log.info("Refresh Token 업데이트 완료 - 이메일: {}, 새로운 Refresh Token: {}", email, refreshToken);
+  }
 }
