@@ -143,4 +143,12 @@ public class UserService {
   public List<User> findUsersByFamilyId(Long familyId) {
     return userRepository.findAllByFamily_FamilyId(familyId);
   }
+
+  public List<User> findAllUsers() {
+    return userRepository.findAll();
+  }
+
+  public List<User> findAllUsersWithNotificationSettings() {
+    return userRepository.findAllByPushNotificationTimeIsNotNull();
+  }
 }
