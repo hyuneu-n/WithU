@@ -31,44 +31,46 @@ public class UserController {
   private final UserService userService;
 
   @Operation(
-      summary = "액세스 토큰 재발급 (RequestParam)",
-      description = "Refresh Token을 사용하여 새로운 Access Token을 발급")
+          summary = "액세스 토큰 재발급 (RequestParam)",
+          description = "Refresh Token을 사용하여 새로운 Access Token을 발급")
   @PostMapping("/refresh-token")
   public ResponseEntity<?> refreshAuthTokenByRequestParam(
-      @RequestParam String refreshToken, @RequestParam String email) {
-    log.debug("Refreshing token for email: {}", email);
+          @RequestParam String refreshToken, @RequestParam String email) {
+    log.info("액세스 토큰 재발급 요청 (RequestParam 방식)");
+    log.debug("이메일: {}, 리프레시 토큰: {}", email, refreshToken);
 
     if (!jwtUtil.validateToken(refreshToken, email)) {
-      log.warn("Invalid Refresh Token for email: {}", email);
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Refresh Token");
+      log.warn("리프레시 토큰이 유효하지 않음 - 이메일: {}", email);
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 리프레시 토큰");
     }
 
     String newAccessToken =
-        jwtUtil.createAccessToken(
-            email, userService.getUserRole(email), userService.getFamilyId(email));
-    log.debug("New Access Token created for email: {}", email);
+            jwtUtil.createAccessToken(
+                    email, userService.getUserRole(email), userService.getFamilyId(email));
+    log.info("새로운 액세스 토큰 생성 완료 - 이메일: {}", email);
 
     return ResponseEntity.ok(new AuthResponse(newAccessToken));
   }
 
   @Operation(
-      summary = "액세스 토큰 재발급 (RequestBody)",
-      description = "Refresh Token을 사용하여 새로운 Access Token을 발급")
+          summary = "액세스 토큰 재발급 (RequestBody)",
+          description = "Refresh Token을 사용하여 새로운 Access Token을 발급")
   @PostMapping("/refresh-token/body")
   public ResponseEntity<?> refreshAuthTokenByRequestBody(@RequestBody RefreshTokenRequest request) {
-    log.debug("Refreshing token for email: {}", request.getEmail());
+    log.info("액세스 토큰 재발급 요청 (RequestBody 방식)");
+    log.debug("요청 데이터: {}", request);
 
     if (!jwtUtil.validateToken(request.getRefreshToken(), request.getEmail())) {
-      log.warn("Invalid Refresh Token for email: {}", request.getEmail());
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Refresh Token");
+      log.warn("리프레시 토큰이 유효하지 않음 - 이메일: {}", request.getEmail());
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 리프레시 토큰");
     }
 
     String newAccessToken =
-        jwtUtil.createAccessToken(
-            request.getEmail(),
-            userService.getUserRole(request.getEmail()),
-            userService.getFamilyId(request.getEmail()));
-    log.debug("New Access Token created for email: {}", request.getEmail());
+            jwtUtil.createAccessToken(
+                    request.getEmail(),
+                    userService.getUserRole(request.getEmail()),
+                    userService.getFamilyId(request.getEmail()));
+    log.info("새로운 액세스 토큰 생성 완료 - 이메일: {}", request.getEmail());
 
     return ResponseEntity.ok(new AuthResponse(newAccessToken));
   }
@@ -76,7 +78,7 @@ public class UserController {
   @Operation(summary = "로그아웃", description = "사용자의 인증 쿠키를 삭제")
   @PostMapping("/logout")
   public ResponseEntity<?> userLogOut(HttpServletResponse response) {
-    log.debug("Logging out user");
+    log.info("로그아웃 요청 처리 중");
     Cookie accessTokenCookie = new Cookie("Authorization", null);
     accessTokenCookie.setMaxAge(0);
     accessTokenCookie.setPath("/");
@@ -87,26 +89,38 @@ public class UserController {
     refreshTokenCookie.setPath("/");
     response.addCookie(refreshTokenCookie);
 
+    log.info("인증 쿠키 삭제 완료");
     return ResponseEntity.ok().build();
   }
 
   @Operation(summary = "[TEST] 사용자 권한 조회", description = "사용자의 권한 정보를 반환")
   @GetMapping("/get-user-role")
   public ResponseEntity<String> getUserRole(@RequestHeader("Authorization") String token) {
-    log.debug("Fetching user role");
-    String email = jwtUtil.extractEmail(token.substring(7));
-    return ResponseEntity.ok(userService.getUserRole(email));
+    log.info("사용자 권한 조회 요청 처리 중");
+    try {
+      String email = jwtUtil.extractEmail(token.substring(7));
+      log.debug("토큰에서 추출한 이메일: {}", email);
+      String role = userService.getUserRole(email);
+      log.info("사용자 권한 조회 완료 - 이메일: {}, 권한: {}", email, role);
+      return ResponseEntity.ok(role);
+    } catch (Exception e) {
+      log.error("사용자 권한 조회 중 오류 발생: {}", e.getMessage(), e);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+    }
   }
 
   @Operation(summary = "[TEST] 첫 로그인 여부 확인", description = "사용자가 첫 로그인을 했는지 확인")
   @PostMapping("/check-first-login")
   public ResponseEntity<Boolean> checkFirstLogin(@RequestHeader("Authorization") String token) {
+    log.info("첫 로그인 여부 확인 요청 처리 중");
     try {
-      log.debug("Checking first login");
       String email = jwtUtil.extractEmail(token.substring(7));
-      return ResponseEntity.ok(userService.isFirstLogin(email));
+      log.debug("토큰에서 추출한 이메일: {}", email);
+      boolean isFirstLogin = userService.isFirstLogin(email);
+      log.info("첫 로그인 여부 확인 완료 - 이메일: {}, 첫 로그인 여부: {}", email, isFirstLogin);
+      return ResponseEntity.ok(isFirstLogin);
     } catch (Exception e) {
-      log.error("Error checking first login: {}", e.getMessage());
+      log.error("첫 로그인 여부 확인 중 오류 발생: {}", e.getMessage(), e);
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
     }
   }
@@ -114,28 +128,35 @@ public class UserController {
   @Operation(summary = "사용자 정보 등록", description = "사용자 첫 로그인 후 정보 등록")
   @PostMapping("/register")
   public ResponseEntity<String> registerUserInfo(
-      @RequestHeader("Authorization") String token, @RequestBody UserRegisterRequest request) {
+          @RequestHeader("Authorization") String token, @RequestBody UserRegisterRequest request) {
+    log.info("사용자 정보 등록 요청 처리 중");
+    log.debug("요청 데이터: {}", request);
+
     try {
-      log.debug("Registering user info");
       String email = jwtUtil.extractEmail(token.substring(7));
+      log.debug("토큰에서 추출한 이메일: {}", email);
       String result = userService.registerUserInfo(email, request);
+      log.info("사용자 정보 등록 완료 - 이메일: {}", email);
       return ResponseEntity.ok(result);
     } catch (Exception e) {
-      log.error("Error registering user info: {}", e.getMessage());
+      log.error("사용자 정보 등록 중 오류 발생: {}", e.getMessage(), e);
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .body("Error: " + e.getMessage());
+              .body("오류 발생: " + e.getMessage());
     }
   }
 
   @Operation(summary = "사용자 정보 조회", description = "사용자의 상세정보 조회")
   @GetMapping("/myInfo")
   public ResponseEntity<UserResponse> getUserInfo(@RequestHeader("Authorization") String token) {
+    log.info("사용자 정보 조회 요청 처리 중");
     try {
-      log.debug("Fetching user info");
       String email = jwtUtil.extractEmail(token.substring(7));
-      return ResponseEntity.ok(userService.getUserInfo(email));
+      log.debug("토큰에서 추출한 이메일: {}", email);
+      UserResponse userInfo = userService.getUserInfo(email);
+      log.info("사용자 정보 조회 완료 - 이메일: {}", email);
+      return ResponseEntity.ok(userInfo);
     } catch (Exception e) {
-      log.error("Error fetching user info: {}", e.getMessage());
+      log.error("사용자 정보 조회 중 오류 발생: {}", e.getMessage(), e);
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
     }
   }
@@ -143,7 +164,7 @@ public class UserController {
   @Operation(summary = "홈 화면", description = "로그인 성공 후 홈 화면으로 이동")
   @GetMapping("/home")
   public ResponseEntity<String> home() {
-    log.debug("Accessed home endpoint");
+    log.info("홈 화면 요청 처리 중");
     return ResponseEntity.ok("로그인 성공!");
   }
 }
