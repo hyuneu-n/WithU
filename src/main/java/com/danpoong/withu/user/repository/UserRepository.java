@@ -13,4 +13,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
   List<User> findAllByFamily_FamilyId(Long familyId);
 
   boolean existsByIdAndFamily_FamilyId(Long id, Long familyId);
+  List<User> findAllByPushNotificationTimeIsNotNull();
 }

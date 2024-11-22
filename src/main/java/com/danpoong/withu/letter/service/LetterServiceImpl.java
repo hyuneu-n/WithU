@@ -264,54 +264,60 @@ public class LetterServiceImpl implements LetterService {
   @Transactional
   public LetterDatailResponse getLetterDatail(Long letterId) {
     Letter letter =
-        letterRepository
-            .findById(letterId)
-            .orElseThrow(
-                () -> new IllegalArgumentException("Letter with ID " + letterId + " not found"));
+            letterRepository
+                    .findById(letterId)
+                    .orElseThrow(
+                            () -> new IllegalArgumentException("Letter with ID " + letterId + " not found"));
+
+    // 편지 읽음 상태 업데이트
+    if (!letter.isRead()) { // 이미 읽은 편지가 아니면 업데이트
+      letter.setIsRead(true);
+      letterRepository.save(letter);
+    }
 
     String senderNickname =
-        userRepository
-            .findById(letter.getSenderId())
-            .map(User::getNickname)
-            .orElseThrow(
-                () ->
-                    new IllegalArgumentException(
-                        "Sender not found for ID: " + letter.getSenderId()));
+            userRepository
+                    .findById(letter.getSenderId())
+                    .map(User::getNickname)
+                    .orElseThrow(
+                            () ->
+                                    new IllegalArgumentException(
+                                            "Sender not found for ID: " + letter.getSenderId()));
 
     String receiverNickname =
-        userRepository
-            .findById(letter.getReceiverId())
-            .map(User::getNickname)
-            .orElseThrow(
-                () ->
-                    new IllegalArgumentException(
-                        "Receiver not found for ID: " + letter.getReceiverId()));
+            userRepository
+                    .findById(letter.getReceiverId())
+                    .map(User::getNickname)
+                    .orElseThrow(
+                            () ->
+                                    new IllegalArgumentException(
+                                            "Receiver not found for ID: " + letter.getReceiverId()));
 
     String scheduleName = null;
     if (letter.getScheduleId() != null && letter.getScheduleId() != 0) {
       scheduleName =
-          scheduleRepository
-              .findById(letter.getScheduleId())
-              .map(Schedule::getTitle)
-              .orElseThrow(
-                  () ->
-                      new IllegalArgumentException(
-                          "Schedule not found for ID: " + letter.getScheduleId()));
+              scheduleRepository
+                      .findById(letter.getScheduleId())
+                      .map(Schedule::getTitle)
+                      .orElseThrow(
+                              () ->
+                                      new IllegalArgumentException(
+                                              "Schedule not found for ID: " + letter.getScheduleId()));
     }
 
     return LetterDatailResponse.builder()
-        .letterId(letter.getId())
-        .senderId(letter.getSenderId())
-        .senderNickName(senderNickname)
-        .receiverId(letter.getReceiverId())
-        .receiverNickName(receiverNickname)
-        .scheduleId(letter.getScheduleId())
-        .scheduleName(scheduleName)
-        .letterType(letter.getLetterType())
-        .keyName(letter.getKeyName())
-        .textContent(letter.getTextContent())
-        .isLiked(letter.getIsLiked())
-        .createdAt(letter.getCreatedDate())
-        .build();
+            .letterId(letter.getId())
+            .senderId(letter.getSenderId())
+            .senderNickName(senderNickname)
+            .receiverId(letter.getReceiverId())
+            .receiverNickName(receiverNickname)
+            .scheduleId(letter.getScheduleId())
+            .scheduleName(scheduleName)
+            .letterType(letter.getLetterType())
+            .keyName(letter.getKeyName())
+            .textContent(letter.getTextContent())
+            .isLiked(letter.getIsLiked())
+            .createdAt(letter.getCreatedDate())
+            .build();
   }
 }

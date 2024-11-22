@@ -1,6 +1,7 @@
 package com.danpoong.withu.user.domain;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -47,4 +48,15 @@ public class User {
 
   @Column(nullable = false)
   private Boolean isDeleted = false;
+
+  @Column
+  private LocalTime pushNotificationTime; // 알림 시간
+
+  public LocalTime getPushNotificationTime() {
+    return this.pushNotificationTime;
+  }
+
+  public void setPushNotificationTime(LocalTime time) {
+    this.pushNotificationTime = time;
+  }
 }

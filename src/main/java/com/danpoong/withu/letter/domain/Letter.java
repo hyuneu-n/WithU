@@ -55,4 +55,11 @@ public class Letter extends BaseTimeEntity {
   public void changeIsLiked() {
     this.isLiked = this.isLiked == null ? true : !this.isLiked;
   }
+
+  @Column(name = "is_read", nullable = false)
+  private boolean isRead = false; // 읽음 여부..
+
+  public void setIsRead(boolean isRead) {
+    this.isRead = isRead;
+  }
 }
