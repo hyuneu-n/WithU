@@ -7,13 +7,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 public class HealthCheck {
-    @Value("${commit.hash}")
-    public String commitHash;
+  @Value("${commit.hash}")
+  public String commitHash;
 
-    @ResponseBody
-    @GetMapping("/health-check")
-    public String healthCheck() {
-        return commitHash;
-    }
+  @ResponseBody
+  @GetMapping("/health-check")
+  public String healthCheck() {
+    return commitHash;
+  }
 }
-
