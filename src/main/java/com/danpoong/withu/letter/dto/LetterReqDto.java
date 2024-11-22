@@ -16,17 +16,12 @@ public class LetterReqDto {
 
     @NotNull
     private Long receiverId;
-
     @NotNull
     private Long familyId;
-
     private Long scheduleId;
-
     @NotNull
     private LetterType letterType;
-
     private String keyName;
-
     private String textContent;
 
 }
