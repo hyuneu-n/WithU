@@ -124,4 +124,11 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
+
+    @Operation(summary = "홈 화면", description = "로그인 성공 후 홈 화면으로 이동")
+    @GetMapping("/home")
+    public ResponseEntity<String> home() {
+        log.debug("Accessed home endpoint");
+        return ResponseEntity.ok("로그인 성공!");
+    }
 }
