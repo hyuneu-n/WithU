@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Where;
 
 import java.time.LocalDate;
 
@@ -13,6 +14,7 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 @Entity
+@Where(clause = "is_deleted = false")
 public class User {
 
     @Id
@@ -44,4 +46,7 @@ public class User {
     @Column(nullable = false, updatable = false)
     @CreationTimestamp
     private LocalDate createdAt;
+
+    @Column(nullable = false)
+    private Boolean isDeleted = false;
 }
