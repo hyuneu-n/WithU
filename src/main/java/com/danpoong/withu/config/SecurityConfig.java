@@ -52,7 +52,8 @@ public class SecurityConfig {
                         "/api/random-message/**",
                         "/api/mypage/**",
                         "/api/schedule/**",
-                        "/api/userStatus/**")
+                        "/api/userStatus/**",
+                        "/api/notification/**")
                     .permitAll()
                     .anyRequest()
                     .authenticated())
