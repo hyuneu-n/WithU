@@ -2,6 +2,7 @@ package com.danpoong.withu.letter.controller;
 
 import com.danpoong.withu.config.auth.jwt.JwtUtil;
 import com.danpoong.withu.letter.controller.response.LetterResponse;
+import com.danpoong.withu.letter.controller.response.TextLetterResponse;
 import com.danpoong.withu.letter.dto.LetterReqDto;
 import com.danpoong.withu.letter.dto.TextLetterRequestDto;
 import com.danpoong.withu.letter.service.LetterService;
@@ -54,7 +55,7 @@ public class LetterController {
     }
 
     @PostMapping("/file")
-    @Operation(summary = "편지 저장(아직 받은 사람은 확인 x)", description = "보낸 편지의 정보를 저장합니다.")
+    @Operation(summary = "편지 전송(아직 받은 사람은 확인 x)", description = "보낸 편지의 정보를 전송 및 db에 저장합니다.")
     public ResponseEntity<LetterResponse> saveLetter(@RequestHeader("Authorization") String bearerToken,
                                                      @RequestBody LetterReqDto request) {
         LetterResponse response = letterService.saveLetter(extractUserId(bearerToken), request);
@@ -62,7 +63,7 @@ public class LetterController {
     }
 
     @PostMapping("/text")
-    @Operation(summary = "텍스트 편지 저장", description = "S3 접근 없이 텍스트 형태의 편지를 저장합니다.")
+    @Operation(summary = "텍스트 편지 전송", description = "S3 접근 없이 텍스트 형태의 편지를 전송 및 db에 저장합니다.")
     public ResponseEntity<LetterResponse> saveTextLetter(@RequestHeader("Authorization") String bearerToken,
                                                          @RequestBody TextLetterRequestDto request) {
 
@@ -85,32 +86,39 @@ public class LetterController {
         return ResponseEntity.status(HttpStatus.OK).body(responses);
     }
 
-    @PatchMapping
+    @PatchMapping("{letterId}")
     @Operation(summary = "편지 보관", description = "보관하기 버튼을 클릭하면 보관 여부를 true로 변경합니다.")
-    public ResponseEntity<LetterResponse> saveLetter(@RequestParam Long letterId) {
+    public ResponseEntity<LetterResponse> saveLetter(@PathVariable Long letterId) {
         LetterResponse updatedLetter = letterService.updateLetterAsSaved(letterId);
         return ResponseEntity.status(HttpStatus.OK).body(updatedLetter);
     }
 
-    @DeleteMapping
+    @DeleteMapping("{letterId}")
     @Operation(summary = "편지 삭제", description = "특정 편지를 삭제하고 삭제된 편지 정보를 반환합니다.")
-    public ResponseEntity<LetterResponse> deleteLetter(@RequestParam Long letterId) {
+    public ResponseEntity<LetterResponse> deleteLetter(@PathVariable Long letterId) {
         LetterResponse deletedLetter = letterService.deleteLetter(letterId);
         return ResponseEntity.status(HttpStatus.OK).body(deletedLetter);
     }
 
-    @GetMapping("/download")
+    @GetMapping("/download/{letterId}")
     @Operation(summary = "편지 조회용 Presigned Url 생성", description = "편지 파일을 다운받기 위한 Presigned URL을 생성합니다.")
-    public ResponseEntity<Map<String, String>> getDownloadUrl(@RequestParam Long letterId) {
+    public ResponseEntity<Map<String, String>> getDownloadUrl(@PathVariable Long letterId) {
         Map<String, String> response = letterService.getDownloadUrl(letterId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PatchMapping("/like")
+    @PatchMapping("/like/{letterId}")
     @Operation(summary = "찜 상태 변경", description = "편지의 찜 상태를 현재 상태에 따라 반대로 변경합니다.")
-    public ResponseEntity<LetterResponse> changeLetterLike(@RequestParam Long letterId) {
+    public ResponseEntity<LetterResponse> changeLetterLike(@PathVariable Long letterId) {
         LetterResponse response = letterService.changeLikeState(letterId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/text/{letterId}")
+    @Operation(summary = "편지 텍스트값 조회", description = "편지의 텍스트 내용을 조회합니다.")
+    public ResponseEntity<TextLetterResponse> getTextContent(@PathVariable Long letterId) {
+        TextLetterResponse textLetterResponse = letterService.getTextContentByLetterId(letterId);
+        return ResponseEntity.ok(textLetterResponse);
     }
 
 

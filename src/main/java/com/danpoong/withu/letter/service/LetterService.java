@@ -1,6 +1,7 @@
 package com.danpoong.withu.letter.service;
 
 import com.danpoong.withu.letter.controller.response.LetterResponse;
+import com.danpoong.withu.letter.controller.response.TextLetterResponse;
 import com.danpoong.withu.letter.dto.LetterReqDto;
 import com.danpoong.withu.letter.dto.TextLetterRequestDto;
 
@@ -17,4 +18,5 @@ public interface LetterService {
     LetterResponse deleteLetter(Long letterId);
     LetterResponse updateLetterAsSaved(Long letterId);
     LetterResponse changeLikeState(Long letterId);
+    TextLetterResponse getTextContentByLetterId(Long letterId);
 }

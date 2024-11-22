@@ -23,7 +23,7 @@ public class LetterResponse {
     private String textContent;
     private Boolean isSaved;
     private Boolean isLiked;
-    private LocalDateTime createdDate;
+    private LocalDateTime createdAt;
 
     public LetterResponse(Letter letter) {
         this.letterId = letter.getId();
@@ -35,6 +35,6 @@ public class LetterResponse {
         this.textContent = letter.getTextContent();
         this.isSaved = letter.getIsSaved();
         this.isLiked = letter.getIsLiked();
-        this.createdDate = letter.getCreatedDate();
+        this.createdAt = letter.getCreatedAt();
     }
 }

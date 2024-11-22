@@ -6,20 +6,21 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Letter extends BaseTimeEntity {
+public class Letter{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "letter_id")
     private Long id;
-
-    @Column(nullable = false)
-    private Long userId;
 
     @Column(nullable = false)
     private Long familyId;
@@ -44,6 +45,10 @@ public class Letter extends BaseTimeEntity {
 
     @Column(nullable = false)
     private Boolean isLiked;
+
+    @Column(nullable = false, updatable = false)
+    @CreationTimestamp
+    private LocalDateTime createdAt;
     public void setSaved() {
         this.isSaved = true;
     }

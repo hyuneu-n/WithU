@@ -2,6 +2,7 @@ package com.danpoong.withu.letter.service;
 
 import com.danpoong.withu.common.exception.ResourceNotFoundException;
 import com.danpoong.withu.letter.controller.response.LetterResponse;
+import com.danpoong.withu.letter.controller.response.TextLetterResponse;
 import com.danpoong.withu.letter.domain.Letter;
 import com.danpoong.withu.letter.domain.LetterType;
 import com.danpoong.withu.letter.dto.LetterReqDto;
@@ -128,7 +129,7 @@ public class LetterServiceImpl implements LetterService{
 
         return letters.stream()
                 .sorted(Comparator
-                        .comparing(Letter::getCreatedDate)
+                        .comparing(Letter::getCreatedAt)
                         .thenComparing((l1, l2) -> l2.getId().compareTo(l1.getId()))
                 )
                 .map(LetterResponse::new)
@@ -197,5 +198,23 @@ public class LetterServiceImpl implements LetterService{
         letter.changeIsLiked();
 
         return new LetterResponse(letterRepository.save(letter));
+    }
+
+    @Override
+    @Transactional
+    public TextLetterResponse getTextContentByLetterId(Long letterId) {
+        Letter letter = letterRepository.findById(letterId)
+                .orElseThrow(() -> new IllegalArgumentException("Letter with ID " + letterId + " not found"));
+
+        return TextLetterResponse.builder()
+                .letterId(letter.getId())
+                .senderId(letter.getSenderId())
+                .receiverId(letter.getReceiverId())
+                .letterType(letter.getLetterType())
+                .keyName(letter.getKeyName())
+                .textContent(letter.getTextContent())
+                .isLiked(letter.getIsLiked())
+                .createdAt(letter.getCreatedAt())
+                .build();
     }
 }

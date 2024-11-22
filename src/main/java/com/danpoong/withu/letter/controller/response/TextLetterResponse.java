@@ -1,27 +1,25 @@
-package com.danpoong.withu.letter.dto;
+package com.danpoong.withu.letter.controller.response;
 
 import com.danpoong.withu.letter.domain.LetterType;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
+@Data
 @Getter
 @Builder
 @AllArgsConstructor
-@Data
-public class LetterReqDto {
-
-    @NotNull
+public class TextLetterResponse {
+    private Long letterId;
+    private Long senderId;
     private Long receiverId;
-    @NotNull
-    private Long familyId;
-    private Long scheduleId;
-    @NotNull
     private LetterType letterType;
     private String keyName;
     private String textContent;
+    private Boolean isLiked;
+    private LocalDateTime createdAt;
 
 }
