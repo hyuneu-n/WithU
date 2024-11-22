@@ -2,13 +2,17 @@ package com.danpoong.withu.letter.service;
 
 import com.danpoong.withu.common.exception.ResourceNotFoundException;
 import com.danpoong.withu.letter.controller.response.LetterResponse;
-import com.danpoong.withu.letter.controller.response.TextLetterResponse;
+import com.danpoong.withu.letter.controller.response.ScheduleLetterResponse;
+import com.danpoong.withu.letter.controller.response.LetterDatailResponse;
+import com.danpoong.withu.user.domain.User;
+import com.danpoong.withu.schedule.domain.Schedule;
 import com.danpoong.withu.letter.domain.Letter;
 import com.danpoong.withu.letter.domain.LetterType;
 import com.danpoong.withu.letter.dto.LetterReqDto;
+import com.danpoong.withu.letter.dto.ScheduleLetterRequestDto;
 import com.danpoong.withu.letter.dto.TextLetterRequestDto;
 import com.danpoong.withu.letter.repository.LetterRepository;
-import com.danpoong.withu.user.domain.User;
+import com.danpoong.withu.schedule.repository.ScheduleRepository;
 import com.danpoong.withu.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,6 +36,7 @@ public class LetterServiceImpl implements LetterService{
     private final S3Presigner s3Presigner;
 
     private final UserRepository userRepository;
+    private final ScheduleRepository scheduleRepository;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
@@ -124,6 +129,35 @@ public class LetterServiceImpl implements LetterService{
 
     @Override
     @Transactional
+    public ScheduleLetterResponse saveScheduleLetter(Long userId, ScheduleLetterRequestDto request) {
+
+        if (!userRepository.existsByIdAndFamily_FamilyId(userId, request.getFamilyId())) {
+            throw new IllegalArgumentException("Sender ID " + userId +
+                    " is not a member of Family ID " + request.getFamilyId());
+        }
+
+        if (!userRepository.existsByIdAndFamily_FamilyId(request.getReceiverId(), request.getFamilyId())) {
+            throw new IllegalArgumentException("Receiver ID " + request.getReceiverId() +
+                    " is not a member of Family ID " + request.getFamilyId());
+        }
+
+        Letter newLetter = Letter.builder()
+                .scheduleId(request.getScheduleId())
+                .senderId(userId)
+                .receiverId(request.getReceiverId())
+                .familyId(request.getFamilyId())
+                .letterType(LetterType.TEXT)
+                .textContent(request.getTextContent())
+                .isLiked(false)
+                .build();
+
+        Letter savedLetter = letterRepository.save(newLetter);
+
+        return new ScheduleLetterResponse(savedLetter);
+    }
+
+    @Override
+    @Transactional
     public List<LetterResponse> getSavedAllLetters(Long receiverId) {
         List<Letter> letters = letterRepository.findAllByReceiverIdAndIsSaved(receiverId, true); // isSaved = true
 
@@ -202,14 +236,33 @@ public class LetterServiceImpl implements LetterService{
 
     @Override
     @Transactional
-    public TextLetterResponse getTextContentByLetterId(Long letterId) {
+    public LetterDatailResponse getLetterDatail(Long letterId) {
         Letter letter = letterRepository.findById(letterId)
                 .orElseThrow(() -> new IllegalArgumentException("Letter with ID " + letterId + " not found"));
 
-        return TextLetterResponse.builder()
+        String senderNickname = userRepository.findById(letter.getSenderId())
+                .map(User::getNickname)
+                .orElseThrow(() -> new IllegalArgumentException("Sender not found for ID: " + letter.getSenderId()));
+
+        String receiverNickname = userRepository.findById(letter.getReceiverId())
+                .map(User::getNickname)
+                .orElseThrow(() -> new IllegalArgumentException("Receiver not found for ID: " + letter.getReceiverId()));
+
+        String scheduleName = null;
+        if (letter.getScheduleId() != null && letter.getScheduleId() != 0) {
+            scheduleName = scheduleRepository.findById(letter.getScheduleId())
+                    .map(Schedule::getTitle)
+                    .orElseThrow(() -> new IllegalArgumentException("Schedule not found for ID: " + letter.getScheduleId()));
+        }
+
+        return LetterDatailResponse.builder()
                 .letterId(letter.getId())
                 .senderId(letter.getSenderId())
+                .senderNickName(senderNickname)
                 .receiverId(letter.getReceiverId())
+                .receiverNickName(receiverNickname)
+                .scheduleId(letter.getScheduleId())
+                .scheduleName(scheduleName)
                 .letterType(letter.getLetterType())
                 .keyName(letter.getKeyName())
                 .textContent(letter.getTextContent())

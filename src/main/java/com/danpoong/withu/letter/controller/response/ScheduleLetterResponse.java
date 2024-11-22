@@ -13,29 +13,25 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 @AllArgsConstructor
-public class LetterResponse {
+public class ScheduleLetterResponse {
     private Long letterId;
+    private Long scheduleId;
     private Long senderId;
     private Long receiverId;
-    private Long scheduleId;
-    private Long familyId;
     private LetterType letterType;
     private String keyName;
     private String textContent;
-    private Boolean isSaved;
     private Boolean isLiked;
     private LocalDateTime createdAt;
 
-    public LetterResponse(Letter letter) {
+    public ScheduleLetterResponse(Letter letter) {
         this.letterId = letter.getId();
+        this.scheduleId = letter.getScheduleId();
         this.senderId = letter.getSenderId();
         this.receiverId = letter.getReceiverId();
-        this.scheduleId= letter.getScheduleId();
-        this.familyId = letter.getFamilyId();
         this.letterType = letter.getLetterType();
         this.keyName = letter.getKeyName();
         this.textContent = letter.getTextContent();
-        this.isSaved = letter.getIsSaved();
         this.isLiked = letter.getIsLiked();
         this.createdAt = letter.getCreatedAt();
     }

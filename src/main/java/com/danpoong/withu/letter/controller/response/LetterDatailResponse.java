@@ -12,10 +12,15 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 @AllArgsConstructor
-public class TextLetterResponse {
+public class LetterDatailResponse {
     private Long letterId;
     private Long senderId;
+    private String senderNickName;
     private Long receiverId;
+    private String receiverNickName;
+    private Long scheduleId;
+    private String scheduleName;
+
     private LetterType letterType;
     private String keyName;
     private String textContent;

@@ -2,8 +2,10 @@ package com.danpoong.withu.letter.controller;
 
 import com.danpoong.withu.config.auth.jwt.JwtUtil;
 import com.danpoong.withu.letter.controller.response.LetterResponse;
-import com.danpoong.withu.letter.controller.response.TextLetterResponse;
+import com.danpoong.withu.letter.controller.response.ScheduleLetterResponse;
+import com.danpoong.withu.letter.controller.response.LetterDatailResponse;
 import com.danpoong.withu.letter.dto.LetterReqDto;
+import com.danpoong.withu.letter.dto.ScheduleLetterRequestDto;
 import com.danpoong.withu.letter.dto.TextLetterRequestDto;
 import com.danpoong.withu.letter.service.LetterService;
 import com.danpoong.withu.user.domain.User;
@@ -71,6 +73,15 @@ public class LetterController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @PostMapping("/schedule")
+    @Operation(summary = "특정 스케줄에 편지 전송", description = "스케줄에 텍스트 형태의 편지를 전송 및 db에 저장합니다.")
+    public ResponseEntity<ScheduleLetterResponse> saveTextLetter(@RequestHeader("Authorization") String bearerToken,
+                                                                 @RequestBody ScheduleLetterRequestDto request) {
+
+        ScheduleLetterResponse response = letterService.saveScheduleLetter(extractUserId(bearerToken), request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
 
     @GetMapping("/saved")
     @Operation(summary = "모든 편지 조회", description = "사용자가 보관한 모든 편지를 조회합니다.")
@@ -115,9 +126,9 @@ public class LetterController {
     }
 
     @GetMapping("/text/{letterId}")
-    @Operation(summary = "편지 텍스트값 조회", description = "편지의 텍스트 내용을 조회합니다.")
-    public ResponseEntity<TextLetterResponse> getTextContent(@PathVariable Long letterId) {
-        TextLetterResponse textLetterResponse = letterService.getTextContentByLetterId(letterId);
+    @Operation(summary = "편지 세부 내용 조회", description = "편지의 세부 내용을 조회합니다.")
+    public ResponseEntity<LetterDatailResponse> getTextContent(@PathVariable Long letterId) {
+        LetterDatailResponse textLetterResponse = letterService.getLetterDatail(letterId);
         return ResponseEntity.ok(textLetterResponse);
     }
 
