@@ -209,7 +209,7 @@ public class LetterServiceImpl implements LetterService {
   @Override
   @Transactional
   public List<LetterResponse> getNullSavedLetters(Long receiverId) {
-    List<Letter> letters = letterRepository.findAllByReceiverIdAndIsSavedIsNull(receiverId);
+    List<Letter> letters = letterRepository.findAllByReceiverIdAndIsSavedIsFalse(receiverId);
     return letters.stream().map(LetterResponse::new).collect(Collectors.toList());
   }
 
