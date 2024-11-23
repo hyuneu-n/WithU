@@ -305,4 +305,35 @@ public class LetterServiceImpl implements LetterService{
                 .sorted(Comparator.comparing(LetterByDateResponse::getDate))
                 .collect(Collectors.toList());
     }
+
+    @Override
+    @Transactional
+    public List<LetterByDateDetailResponse> getSavedLettersByDate(Long receiverId, String yearMonth, int day) {
+        String[] yearMonthSplit = yearMonth.split("-");
+        int year = Integer.parseInt(yearMonthSplit[0]);
+        int month = Integer.parseInt(yearMonthSplit[1]);
+
+        LocalDate specificDate = LocalDate.of(year, month, day);
+
+        List<Letter> letters = letterRepository.findAllByReceiverIdAndIsSavedAndCreatedAtBetween(
+                receiverId, true,
+                specificDate.atStartOfDay(),
+                specificDate.atTime(LocalTime.MAX)
+        );
+
+        return letters.stream().map(letter -> {
+            String senderNickname = userRepository.findById(letter.getSenderId())
+                    .map(User::getNickname)
+                    .orElse("Unknown Sender");
+
+            return LetterByDateDetailResponse.builder()
+                    .letterId(letter.getId())
+                    .letterType(letter.getLetterType())
+                    .senderNickname(senderNickname)
+                    .textContent(letter.getTextContent())
+                    .isLiked(letter.getIsLiked())
+                    .createdAt(letter.getCreatedAt())
+                    .build();
+        }).collect(Collectors.toList());
+    }
 }

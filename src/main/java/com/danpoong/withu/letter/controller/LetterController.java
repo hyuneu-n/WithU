@@ -1,10 +1,7 @@
 package com.danpoong.withu.letter.controller;
 
 import com.danpoong.withu.config.auth.jwt.JwtUtil;
-import com.danpoong.withu.letter.controller.response.LetterByDateResponse;
-import com.danpoong.withu.letter.controller.response.LetterResponse;
-import com.danpoong.withu.letter.controller.response.ScheduleLetterResponse;
-import com.danpoong.withu.letter.controller.response.LetterDatailResponse;
+import com.danpoong.withu.letter.controller.response.*;
 import com.danpoong.withu.letter.dto.LetterReqDto;
 import com.danpoong.withu.letter.dto.ScheduleLetterRequestDto;
 import com.danpoong.withu.letter.dto.TextLetterRequestDto;
@@ -140,6 +137,18 @@ public class LetterController {
             @PathVariable String yearMonth) {
         Long userId = extractUserId(bearerToken);
         List<LetterByDateResponse> responses = letterService.getSavedLettersByMonth(userId, yearMonth);
+        return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/saved/{yearMonth}/{day}")
+    @Operation(summary = "특정 날짜의 편지 조회", description = "특정 날짜에 보관된 편지 정보를 조회합니다.")
+    public ResponseEntity<List<LetterByDateDetailResponse>> getSavedLettersByDate(
+            @RequestHeader("Authorization") String bearerToken,
+            @PathVariable String yearMonth,
+            @PathVariable int day) {
+
+        Long userId = extractUserId(bearerToken);
+        List<LetterByDateDetailResponse> responses = letterService.getSavedLettersByDate(userId, yearMonth, day);
         return ResponseEntity.ok(responses);
     }
 
