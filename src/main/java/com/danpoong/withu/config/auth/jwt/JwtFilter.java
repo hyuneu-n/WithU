@@ -34,6 +34,15 @@ public class JwtFilter extends OncePerRequestFilter {
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain chain)
       throws ServletException, IOException {
+
+    String requestUri = request.getRequestURI();
+
+    // 카카오 로그인 경로 제외
+    if (requestUri.startsWith("/api/auth/kakao/login")) {
+      chain.doFilter(request, response);
+      return;
+    }
+
     try {
       final String authorizationHeader = request.getHeader("Authorization");
       String email = null;
