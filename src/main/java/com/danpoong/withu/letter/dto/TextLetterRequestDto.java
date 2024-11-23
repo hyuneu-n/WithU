@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TextLetterRequestDto {
-    private Long familyId;
-    private Long receiverId;
-    private String textContent;
+  private Long familyId;
+  private Long receiverId;
+  private String textContent;
 }

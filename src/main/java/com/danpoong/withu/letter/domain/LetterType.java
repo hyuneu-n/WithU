@@ -1,8 +1,8 @@
 package com.danpoong.withu.letter.domain;
 
 public enum LetterType {
-    AUDIO,
-    IMAGE,
-    TEXT,
-    IMAGETEXT
+  AUDIO,
+  IMAGE,
+  TEXT,
+  IMAGETEXT
 }

@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ScheduleLetterRequestDto {
-    private Long scheduleId;
-    private Long familyId;
-    private Long receiverId;
-    private String textContent;
+  private Long scheduleId;
+  private Long familyId;
+  private Long receiverId;
+  private String textContent;
 }
