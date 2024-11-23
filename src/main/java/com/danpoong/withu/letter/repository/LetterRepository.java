@@ -16,7 +16,7 @@ public interface LetterRepository extends JpaRepository<Letter, Long> {
   List<Letter> findAllByReceiverIdAndIsSaved(Long receiverId, Boolean isSaved);
 
   List<Letter> findAllByReceiverIdAndIsSavedIsNull(Long receiverId);
-//  boolean existsByReceiverIdAndIsReadFalse(User receiver); // 읽었는지 안 읽었는지
+  boolean existsByReceiverIdAndIsSavedIsNull(User receiver); // 읽었는지 안 읽었는지
 
   int countByReceiverId(Long receiverId);
 
