@@ -53,7 +53,8 @@ public class SecurityConfig {
                         "/api/mypage/**",
                         "/api/schedule/**",
                         "/api/userStatus/**",
-                        "/api/notification/**")
+                        "/api/notification/**",
+                            "/api/auth/**")
                     .permitAll()
                     .anyRequest()
                     .authenticated())

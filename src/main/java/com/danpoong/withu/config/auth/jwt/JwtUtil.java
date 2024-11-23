@@ -92,4 +92,6 @@ public class JwtUtil {
         .getBody()
         .get("familyId", Long.class); // 가족 ID 추출
   }
+
+
 }
