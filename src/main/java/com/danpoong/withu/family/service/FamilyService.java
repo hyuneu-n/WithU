@@ -41,7 +41,7 @@ public class FamilyService {
     // InviteTokenService를 통해 초대 토큰 생성
     String inviteToken = inviteTokenService.generateInviteToken(familyId);
 
-    return "http://localhost:8080/invite?token=" + inviteToken;
+    return "http://15.164.29.113:8080/invite?token=" + inviteToken;
   }
 
   @Transactional
