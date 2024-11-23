@@ -16,6 +16,9 @@ import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignReques
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 import com.danpoong.withu.common.exception.ResourceNotFoundException;
+import com.danpoong.withu.letter.controller.response.*;
+import com.danpoong.withu.user.domain.User;
+import com.danpoong.withu.schedule.domain.Schedule;
 import com.danpoong.withu.letter.controller.response.LetterDatailResponse;
 import com.danpoong.withu.letter.controller.response.LetterResponse;
 import com.danpoong.withu.letter.controller.response.ScheduleLetterResponse;
@@ -29,6 +32,20 @@ import com.danpoong.withu.schedule.domain.Schedule;
 import com.danpoong.withu.schedule.repository.ScheduleRepository;
 import com.danpoong.withu.user.domain.User;
 import com.danpoong.withu.user.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
+
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -304,7 +321,7 @@ public class LetterServiceImpl implements LetterService {
                                       new IllegalArgumentException(
                                               "Schedule not found for ID: " + letter.getScheduleId()));
     }
-
+    
     return LetterDatailResponse.builder()
             .letterId(letter.getId())
             .senderId(letter.getSenderId())
@@ -320,4 +337,112 @@ public class LetterServiceImpl implements LetterService {
             .createdAt(letter.getCreatedDate())
             .build();
   }
+
+    @Override
+    @Transactional
+    public List<LetterByDateResponse> getSavedLettersByMonth(Long receiverId, String yearMonth) {
+
+        String[] yearMonthSplit = yearMonth.split("-");
+        int year = Integer.parseInt(yearMonthSplit[0]);
+        int month = Integer.parseInt(yearMonthSplit[1]);
+
+        LocalDate startOfMonth = LocalDate.of(year, month, 1);
+        LocalDate endOfMonth = startOfMonth.withDayOfMonth(startOfMonth.lengthOfMonth());
+
+        List<Letter> letters = letterRepository.findAllByReceiverIdAndIsSavedAndCreatedAtBetween(
+                receiverId, true,
+                startOfMonth.atStartOfDay(),
+                endOfMonth.atTime(LocalTime.MAX)
+        );
+
+        Map<LocalDate, List<LetterByMonthResponse>> groupedLetters = letters.stream()
+                .map(letter -> new LetterByMonthResponse(
+                        letter.getId(),
+                        letter.getIsLiked(),
+                        letter.getCreatedAt()
+                ))
+                .collect(Collectors.groupingBy(letter -> letter.getCreatedAt().toLocalDate()));
+
+        return groupedLetters.entrySet().stream()
+                .map(entry -> new LetterByDateResponse(
+                        entry.getKey(),
+                        entry.getValue(),
+                        entry.getValue().size()
+                ))
+                .sorted(Comparator.comparing(LetterByDateResponse::getDate))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public List<LetterByDateDetailResponse> getSavedLettersByDate(Long receiverId, String yearMonth, int day) {
+        String[] yearMonthSplit = yearMonth.split("-");
+        int year = Integer.parseInt(yearMonthSplit[0]);
+        int month = Integer.parseInt(yearMonthSplit[1]);
+
+        LocalDate specificDate = LocalDate.of(year, month, day);
+
+        List<Letter> letters = letterRepository.findAllByReceiverIdAndIsSavedAndCreatedAtBetween(
+                receiverId, true,
+                specificDate.atStartOfDay(),
+                specificDate.atTime(LocalTime.MAX)
+        );
+
+        return letters.stream().map(letter -> {
+            String senderNickname = userRepository.findById(letter.getSenderId())
+                    .map(User::getNickname)
+                    .orElse("Unknown Sender");
+
+            return LetterByDateDetailResponse.builder()
+                    .letterId(letter.getId())
+                    .letterType(letter.getLetterType())
+                    .senderNickname(senderNickname)
+                    .textContent(letter.getTextContent())
+                    .isLiked(letter.getIsLiked())
+                    .createdAt(letter.getCreatedAt())
+                    .build();
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public List<LettersByLikeDateResponse> getLikedLettersByMonth(Long receiverId, String yearMonth) {
+        String[] yearMonthSplit = yearMonth.split("-");
+        int year = Integer.parseInt(yearMonthSplit[0]);
+        int month = Integer.parseInt(yearMonthSplit[1]);
+
+        LocalDate startOfMonth = LocalDate.of(year, month, 1);
+        LocalDate endOfMonth = startOfMonth.withDayOfMonth(startOfMonth.lengthOfMonth());
+
+        List<Letter> likedLetters = letterRepository.findAllByReceiverIdAndIsLikedAndCreatedAtBetween(
+                receiverId, true,
+                startOfMonth.atStartOfDay(),
+                endOfMonth.atTime(LocalTime.MAX)
+        );
+
+        Map<LocalDate, List<LetterByLikeResponse>> groupedLetters = likedLetters.stream()
+                .map(letter -> {
+                    String senderNickName = userRepository.findById(letter.getSenderId())
+                            .map(User::getNickname)
+                            .orElse("알 수 없는 사용자");
+                    return LetterByLikeResponse.builder()
+                            .letterId(letter.getId())
+                            .senderId(letter.getSenderId())
+                            .senderNickName(senderNickName)
+                            .isLiked(letter.getIsLiked())
+                            .createdAt(letter.getCreatedAt())
+                            .build();
+                })
+                .collect(Collectors.groupingBy(letter -> letter.getCreatedAt().toLocalDate()));
+
+        return groupedLetters.entrySet().stream()
+                .map(entry -> new LettersByLikeDateResponse(
+                        entry.getKey(),
+                        entry.getValue(),
+                        entry.getValue().size()
+                ))
+                .sorted(Comparator.comparing(LettersByLikeDateResponse::getDate))
+                .collect(Collectors.toList());
+    }
+    
 }
