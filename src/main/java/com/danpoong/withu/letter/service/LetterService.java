@@ -1,5 +1,6 @@
 package com.danpoong.withu.letter.service;
 
+import com.danpoong.withu.letter.controller.response.LetterByDateResponse;
 import com.danpoong.withu.letter.controller.response.LetterResponse;
 import com.danpoong.withu.letter.controller.response.ScheduleLetterResponse;
 import com.danpoong.withu.letter.controller.response.LetterDatailResponse;
@@ -22,4 +23,5 @@ public interface LetterService {
     LetterResponse updateLetterAsSaved(Long letterId);
     LetterResponse changeLikeState(Long letterId);
     LetterDatailResponse getLetterDatail(Long letterId);
+    List<LetterByDateResponse> getSavedLettersByMonth(Long receiverId, String yearMonth);
 }

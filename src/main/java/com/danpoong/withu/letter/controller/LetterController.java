@@ -1,6 +1,7 @@
 package com.danpoong.withu.letter.controller;
 
 import com.danpoong.withu.config.auth.jwt.JwtUtil;
+import com.danpoong.withu.letter.controller.response.LetterByDateResponse;
 import com.danpoong.withu.letter.controller.response.LetterResponse;
 import com.danpoong.withu.letter.controller.response.ScheduleLetterResponse;
 import com.danpoong.withu.letter.controller.response.LetterDatailResponse;
@@ -130,6 +131,16 @@ public class LetterController {
     public ResponseEntity<LetterDatailResponse> getTextContent(@PathVariable Long letterId) {
         LetterDatailResponse textLetterResponse = letterService.getLetterDatail(letterId);
         return ResponseEntity.ok(textLetterResponse);
+    }
+
+    @GetMapping("/saved/{yearMonth}")
+    @Operation(summary = "특정 월의 편지 조회", description = "특정 연월에 보관된 편지를 날짜별로 조회합니다.")
+    public ResponseEntity<List<LetterByDateResponse>> getSavedLettersByMonth(
+            @RequestHeader("Authorization") String bearerToken,
+            @PathVariable String yearMonth) {
+        Long userId = extractUserId(bearerToken);
+        List<LetterByDateResponse> responses = letterService.getSavedLettersByMonth(userId, yearMonth);
+        return ResponseEntity.ok(responses);
     }
 
 

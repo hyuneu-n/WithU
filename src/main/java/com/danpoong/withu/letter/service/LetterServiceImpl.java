@@ -1,9 +1,7 @@
 package com.danpoong.withu.letter.service;
 
 import com.danpoong.withu.common.exception.ResourceNotFoundException;
-import com.danpoong.withu.letter.controller.response.LetterResponse;
-import com.danpoong.withu.letter.controller.response.ScheduleLetterResponse;
-import com.danpoong.withu.letter.controller.response.LetterDatailResponse;
+import com.danpoong.withu.letter.controller.response.*;
 import com.danpoong.withu.user.domain.User;
 import com.danpoong.withu.schedule.domain.Schedule;
 import com.danpoong.withu.letter.domain.Letter;
@@ -24,6 +22,8 @@ import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignReques
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -269,5 +269,40 @@ public class LetterServiceImpl implements LetterService{
                 .isLiked(letter.getIsLiked())
                 .createdAt(letter.getCreatedAt())
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public List<LetterByDateResponse> getSavedLettersByMonth(Long receiverId, String yearMonth) {
+
+        String[] yearMonthSplit = yearMonth.split("-");
+        int year = Integer.parseInt(yearMonthSplit[0]);
+        int month = Integer.parseInt(yearMonthSplit[1]);
+
+        LocalDate startOfMonth = LocalDate.of(year, month, 1);
+        LocalDate endOfMonth = startOfMonth.withDayOfMonth(startOfMonth.lengthOfMonth());
+
+        List<Letter> letters = letterRepository.findAllByReceiverIdAndIsSavedAndCreatedAtBetween(
+                receiverId, true,
+                startOfMonth.atStartOfDay(),
+                endOfMonth.atTime(LocalTime.MAX)
+        );
+
+        Map<LocalDate, List<LetterByMonthResponse>> groupedLetters = letters.stream()
+                .map(letter -> new LetterByMonthResponse(
+                        letter.getId(),
+                        letter.getIsLiked(),
+                        letter.getCreatedAt()
+                ))
+                .collect(Collectors.groupingBy(letter -> letter.getCreatedAt().toLocalDate()));
+
+        return groupedLetters.entrySet().stream()
+                .map(entry -> new LetterByDateResponse(
+                        entry.getKey(),
+                        entry.getValue(),
+                        entry.getValue().size()
+                ))
+                .sorted(Comparator.comparing(LetterByDateResponse::getDate))
+                .collect(Collectors.toList());
     }
 }
