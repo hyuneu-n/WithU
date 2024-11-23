@@ -166,4 +166,21 @@ public class UserService {
     userRepository.save(user);
     log.info("Refresh Token 업데이트 완료 - 이메일: {}, 새로운 Refresh Token: {}", email, refreshToken);
   }
+
+  public User createUser(String email, String nickname, String profileImage) {
+    User newUser = new User();
+    newUser.setEmail(email);
+    newUser.setNickname(nickname != null ? nickname : "defaultNickname");
+    newUser.setProfileImage(profileImage); // 프로필 이미지 저장
+    newUser.setRole("ROLE_USER");
+    userRepository.save(newUser);
+    return newUser;
+  }
+
+  public void updateProfileImage(String email, String profileImage) {
+    User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+    user.setProfileImage(profileImage);
+    userRepository.save(user);
+    log.info("프로필 이미지 업데이트 - 이메일: {}, 이미지 URL: {}", email, profileImage);
+  }
 }
