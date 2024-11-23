@@ -17,5 +17,6 @@ public class FamilyMembersResponseDto {
     private Long userId;
     private String nickname;
     private String email;
+    private String profileImage; // 프로필 이미지 추가
   }
 }

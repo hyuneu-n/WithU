@@ -1,14 +1,12 @@
 package com.danpoong.withu.family.service;
 
-import lombok.RequiredArgsConstructor;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.danpoong.withu.family.domain.Family;
 import com.danpoong.withu.family.repository.FamilyRepository;
 import com.danpoong.withu.user.domain.User;
 import com.danpoong.withu.user.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,27 +18,16 @@ public class FamilyService {
 
   @Transactional
   public String createInviteLink(Long familyId, Long userId) {
-    // 멤버 조회
-    User user =
-        userRepository
-            .findById(userId)
+    User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: userId=" + userId));
 
-    Family family;
-    if (user.getFamily() != null) {
-      family = user.getFamily();
-      familyId = family.getFamilyId();
-    } else {
-      Family newFamily = new Family();
-      familyRepository.save(newFamily);
-      familyId = newFamily.getFamilyId();
-      user.setFamily(newFamily);
-      userRepository.save(user);
+    Family family = user.getFamily();
+    if (family == null) {
+      family = createFamilyForUser(user);
     }
 
-    // InviteTokenService를 통해 초대 토큰 생성
-    String inviteToken = inviteTokenService.generateInviteToken(familyId);
-
+    // 초대 토큰 생성
+    String inviteToken = inviteTokenService.generateInviteToken(family.getFamilyId());
     return "http://15.164.29.113:8080/invite?token=" + inviteToken;
   }
 
@@ -48,19 +35,16 @@ public class FamilyService {
   public String joinFamilyByInvite(String inviteLink, Long userId) {
     Long familyId = validateInviteToken(extractTokenFromLink(inviteLink));
 
-    User user =
-        userRepository
-            .findById(userId)
+    User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: userId=" + userId));
 
     if (user.getFamily() != null) {
       return "이미 다른 가족 그룹에 속해 있습니다.";
     }
 
-    Family family =
-        familyRepository
-            .findById(familyId)
+    Family family = familyRepository.findById(familyId)
             .orElseThrow(() -> new RuntimeException("가족 그룹을 찾을 수 없습니다: familyId=" + familyId));
+
     user.setFamily(family);
     userRepository.save(user);
 
@@ -68,18 +52,15 @@ public class FamilyService {
   }
 
   private Long validateInviteToken(String token) {
-    return inviteTokenService.validateInviteToken(token); // InviteTokenService의 메서드 사용
+    return inviteTokenService.validateInviteToken(token);
   }
 
   private String extractTokenFromLink(String inviteLink) {
     String tokenPrefix = "token=";
-    int tokenStartIndex = inviteLink.indexOf(tokenPrefix);
-
-    if (tokenStartIndex == -1) {
-      throw new IllegalArgumentException("초대 링크에 토큰이 포함되어 있지 않습니다.");
+    if (inviteLink == null || !inviteLink.contains(tokenPrefix)) {
+      throw new IllegalArgumentException("유효하지 않은 초대 링크입니다.");
     }
-
-    return inviteLink.substring(tokenStartIndex + tokenPrefix.length());
+    return inviteLink.substring(inviteLink.indexOf(tokenPrefix) + tokenPrefix.length());
   }
 
   @Transactional(readOnly = true)
@@ -91,15 +72,13 @@ public class FamilyService {
   @Transactional
   public Family createFamilyForUser(User user) {
     Family newFamily = new Family();
-    newFamily = familyRepository.save(newFamily); // 가족 그룹 저장
+    newFamily = familyRepository.save(newFamily);
 
-    // 멤버를 생성된 가족 그룹에 포함
     user.setFamily(newFamily);
-    userRepository.save(user); // 멤버 업데이트 저장
+    userRepository.save(user);
 
     return newFamily;
   }
-
   // 새로운 Family 생성 메서드
   public Family createDefaultFamilyForUser(User user) {
     Family family = new Family();
