@@ -111,6 +111,7 @@ public class UserController {
     }
   }
 
+  @Operation(summary = "사용자 첫 로그인 확인")
   @PostMapping("/check-first-login")
   public ResponseEntity<?> checkFirstLogin(@RequestHeader("Authorization") String token) {
     log.info("첫 로그인 여부 확인 요청 처리 중");
