@@ -50,6 +50,23 @@ public class LetterController {
     return user.getId();
   }
 
+    @GetMapping("/url")
+    @Operation(summary = "편지 저장용 Presigned Url 생성", description = "S3 업로드를 위한 Presigned Url을 생성합니다.")
+    public ResponseEntity<Map<String, String>> generatePresignedUrl(
+            @RequestHeader("Authorization") String bearerToken,
+            @RequestParam Long familyId, @RequestParam Long receiverId) {
+        Map<String, String> response = letterService.generatePresignedUrl(familyId, extractUserId(bearerToken), receiverId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/file")
+    @Operation(summary = "편지 전송(아직 받은 사람은 확인 x)", description = "보낸 편지의 정보를 전송 및 db에 저장합니다.")
+    public ResponseEntity<LetterResponse> saveLetter(@RequestHeader("Authorization") String bearerToken,
+                                                     @RequestBody LetterReqDto request) {
+        LetterResponse response = letterService.saveLetter(extractUserId(bearerToken), request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
     @PostMapping("/text")
     @Operation(summary = "텍스트 편지 전송", description = "S3 접근 없이 텍스트 형태의 편지를 전송 및 db에 저장합니다.")
     public ResponseEntity<LetterResponse> saveTextLetter(@RequestHeader("Authorization") String bearerToken,

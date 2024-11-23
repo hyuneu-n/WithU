@@ -54,7 +54,7 @@ public class NotificationService {
             }
 
             // 읽지 않은 편지가 있으면 알림 전송
-            if (letterRepository.existsByReceiverIdAndIsReadFalse(user)) {
+            if (letterRepository.existsByReceiverIdAndIsSavedIsNull(user)) {
                 NotificationDto dto = NotificationDto.builder()
                         .msgTitle("📨 읽지 않은 편지가 도착했습니다!") // 알림 제목
                         .type(NotificationType.LETTER_NOTIFICATION) // 알림 타입

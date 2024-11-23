@@ -34,6 +34,6 @@ public class ScheduleLetterResponse {
     this.keyName = letter.getKeyName();
     this.textContent = letter.getTextContent();
     this.isLiked = letter.getIsLiked();
-    this.createdAt = letter.getCreatedDate();
+    this.createdAt = letter.getCreatedAt();
   }
 }
