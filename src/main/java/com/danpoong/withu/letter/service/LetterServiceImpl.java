@@ -200,7 +200,7 @@ public class LetterServiceImpl implements LetterService {
 
     return letters.stream()
         .sorted(
-            Comparator.comparing(Letter::getCreatedDate)
+            Comparator.comparing(Letter::getCreatedAt)
                 .thenComparing((l1, l2) -> l2.getId().compareTo(l1.getId())))
         .map(LetterResponse::new)
         .collect(Collectors.toList());
@@ -286,11 +286,11 @@ public class LetterServiceImpl implements LetterService {
                     .orElseThrow(
                             () -> new IllegalArgumentException("Letter with ID " + letterId + " not found"));
 
-    // 편지 읽음 상태 업데이트
-    if (!letter.isRead()) { // 이미 읽은 편지가 아니면 업데이트
-      letter.setIsRead(true);
-      letterRepository.save(letter);
-    }
+//    // 편지 읽음 상태 업데이트
+//    if (!letter.isRead()) { // 이미 읽은 편지가 아니면 업데이트
+//      letter.setIsRead(true);
+//      letterRepository.save(letter);
+//    }
 
     String senderNickname =
             userRepository
@@ -334,7 +334,7 @@ public class LetterServiceImpl implements LetterService {
             .keyName(letter.getKeyName())
             .textContent(letter.getTextContent())
             .isLiked(letter.getIsLiked())
-            .createdAt(letter.getCreatedDate())
+            .createdAt(letter.getCreatedAt())
             .build();
   }
 

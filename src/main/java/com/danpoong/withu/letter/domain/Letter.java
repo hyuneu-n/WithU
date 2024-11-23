@@ -8,13 +8,16 @@ import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 
 import com.danpoong.withu.common.BaseTimeEntity;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Letter extends BaseTimeEntity {
+public class Letter{
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "letter_id")
@@ -45,9 +48,9 @@ public class Letter extends BaseTimeEntity {
   @Column(nullable = false)
   private Boolean isLiked;
 
-  //    @Column(nullable = false, updatable = false)
-  //    @CreationTimestamp
-  //    private LocalDateTime createdAt;
+  @Column(nullable = false, updatable = false)
+  @CreationTimestamp
+  private LocalDateTime createdAt;
   public void setSaved() {
     this.isSaved = true;
   }
@@ -56,10 +59,8 @@ public class Letter extends BaseTimeEntity {
     this.isLiked = this.isLiked == null ? true : !this.isLiked;
   }
 
-  @Column(name = "is_read", nullable = false)
-  private boolean isRead = false; // 읽음 여부..
 
-  public void setIsRead(boolean isRead) {
-    this.isRead = isRead;
-  }
+//  public void setIsRead(boolean isRead) {
+//    this.isRead = isRead;
+//  }
 }

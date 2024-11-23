@@ -38,6 +38,6 @@ public class LetterResponse {
     this.textContent = letter.getTextContent();
     this.isSaved = letter.getIsSaved();
     this.isLiked = letter.getIsLiked();
-    this.createdDate = letter.getCreatedDate();
+    this.createdDate = letter.getCreatedAt();
   }
 }
