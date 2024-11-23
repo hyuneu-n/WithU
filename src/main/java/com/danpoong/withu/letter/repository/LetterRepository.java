@@ -17,6 +17,11 @@ public interface LetterRepository extends JpaRepository<Letter, Long> {
 
     List<Letter> findAllByReceiverIdAndIsSavedAndCreatedAtBetween(
             Long receiverId, Boolean isSaved, LocalDateTime startDate, LocalDateTime endDate);
-
+    List<Letter> findAllByReceiverIdAndIsLikedAndCreatedAtBetween(
+            Long receiverId,
+            Boolean isLiked,
+            LocalDateTime startDateTime,
+            LocalDateTime endDateTime
+    );
 
 }

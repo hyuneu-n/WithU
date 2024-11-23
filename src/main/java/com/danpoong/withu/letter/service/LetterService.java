@@ -22,4 +22,5 @@ public interface LetterService {
     LetterDatailResponse getLetterDatail(Long letterId);
     List<LetterByDateResponse> getSavedLettersByMonth(Long receiverId, String yearMonth);
     List<LetterByDateDetailResponse> getSavedLettersByDate(Long receiverId, String yearMonth, int day);
+    List<LettersByLikeDateResponse> getLikedLettersByMonth(Long receiverId, String yearMonth);
 }

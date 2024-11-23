@@ -336,4 +336,45 @@ public class LetterServiceImpl implements LetterService{
                     .build();
         }).collect(Collectors.toList());
     }
+
+    @Override
+    @Transactional
+    public List<LettersByLikeDateResponse> getLikedLettersByMonth(Long receiverId, String yearMonth) {
+        String[] yearMonthSplit = yearMonth.split("-");
+        int year = Integer.parseInt(yearMonthSplit[0]);
+        int month = Integer.parseInt(yearMonthSplit[1]);
+
+        LocalDate startOfMonth = LocalDate.of(year, month, 1);
+        LocalDate endOfMonth = startOfMonth.withDayOfMonth(startOfMonth.lengthOfMonth());
+
+        List<Letter> likedLetters = letterRepository.findAllByReceiverIdAndIsLikedAndCreatedAtBetween(
+                receiverId, true,
+                startOfMonth.atStartOfDay(),
+                endOfMonth.atTime(LocalTime.MAX)
+        );
+
+        Map<LocalDate, List<LetterByLikeResponse>> groupedLetters = likedLetters.stream()
+                .map(letter -> {
+                    String senderNickName = userRepository.findById(letter.getSenderId())
+                            .map(User::getNickname)
+                            .orElse("알 수 없는 사용자");
+                    return LetterByLikeResponse.builder()
+                            .letterId(letter.getId())
+                            .senderId(letter.getSenderId())
+                            .senderNickName(senderNickName)
+                            .isLiked(letter.getIsLiked())
+                            .createdAt(letter.getCreatedAt())
+                            .build();
+                })
+                .collect(Collectors.groupingBy(letter -> letter.getCreatedAt().toLocalDate()));
+
+        return groupedLetters.entrySet().stream()
+                .map(entry -> new LettersByLikeDateResponse(
+                        entry.getKey(),
+                        entry.getValue(),
+                        entry.getValue().size()
+                ))
+                .sorted(Comparator.comparing(LettersByLikeDateResponse::getDate))
+                .collect(Collectors.toList());
+    }
 }

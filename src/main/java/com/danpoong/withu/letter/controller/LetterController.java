@@ -152,5 +152,15 @@ public class LetterController {
         return ResponseEntity.ok(responses);
     }
 
+    @GetMapping("/like/{yearMonth}")
+    @Operation(summary = "특정 월의 찜한 편지 조회", description = "특정 연월에 찜한 편지를 날짜별로 조회합니다.")
+    public ResponseEntity<List<LettersByLikeDateResponse>> getLikedLettersByMonth(
+            @RequestHeader("Authorization") String bearerToken,
+            @PathVariable String yearMonth) {
+        Long userId = extractUserId(bearerToken);
+        List<LettersByLikeDateResponse> responses = letterService.getLikedLettersByMonth(userId, yearMonth);
+        return ResponseEntity.ok(responses);
+    }
+
 
 }
